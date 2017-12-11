@@ -9,26 +9,22 @@ class DisclosedContent extends React.Component {
 
     this.lock = this.lock.bind(this);
     this.unlock = this.unlock.bind(this);
+
+    this.state = {
+      isLocked: false,
+    };
   }
 
   unlock() {
-    this.props.unlock()
-      .then(() => {
-        console.log('Unlock succeeded');
-      })
-      .catch(() => {
-        console.log('Unlock failed');
-      });
+    this.setState({
+      isLocked: false,
+    });
   }
 
   lock() {
-    this.props.lock()
-      .then(() => {
-        console.log('Lock succeeded');
-      })
-      .catch(() => {
-        console.log('Lock failed');
-      });
+    this.setState({
+      isLocked: true,
+    });
   }
 
   render() {

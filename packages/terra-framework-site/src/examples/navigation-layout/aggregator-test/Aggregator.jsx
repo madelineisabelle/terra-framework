@@ -13,7 +13,7 @@ class Aggregator extends React.Component {
 
     this.state = {
       disclosure: undefined,
-      sectionFocus: undefined,
+      activeSection: undefined,
       sectionLock: false,
     };
   }
@@ -25,27 +25,27 @@ class Aggregator extends React.Component {
 
     this.setState({
       sectionLock: lock,
-      sectionFocus: sectionId,
+      activeSection: sectionId,
     });
 
     return Promise.resolve(this.disclose);
   }
 
   closeDisclosure(sectionId, clearFocus) {
-    if (this.state.sectionFocus !== sectionId || this.state.sectionLock) {
+    if (this.state.activeSection !== sectionId || this.state.sectionLock) {
       return Promise.reject();
     }
 
     this.setState({
       disclosure: undefined,
-      sectionFocus: clearFocus ? undefined : this.state.sectionFocus,
+      activeSection: clearFocus ? undefined : this.state.activeSection,
     });
 
     return Promise.resolve();
   }
 
   lock(sectionId) {
-    if (this.state.focusSection !== sectionId) {
+    if (this.state.activeSection !== sectionId) {
       return Promise.reject();
     }
 
@@ -57,7 +57,7 @@ class Aggregator extends React.Component {
   }
 
   unlock(sectionId) {
-    if (this.state.focusSection !== sectionId) {
+    if (this.state.activeSection !== sectionId) {
       return Promise.reject();
     }
 
@@ -93,7 +93,7 @@ class Aggregator extends React.Component {
         mainContent={
           React.Children.map(this.props.children, child => (
             React.cloneElement(child, {
-              sectionFocus: this.state.sectionFocus,
+              activeSection: this.state.activeSection,
               requestSelection: this.requestSelection,
             })
           ))

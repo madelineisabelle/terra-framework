@@ -16,7 +16,7 @@ class Section extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.sectionFocus !== nextProps.name) {
+    if (nextProps.activeSection !== nextProps.name) {
       this.setState({
         selectedIndex: undefined,
       });
