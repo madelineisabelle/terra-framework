@@ -22,30 +22,18 @@
   },
   "homepage": "https://github.com/cerner/terra-framework#readme",
   "devDependencies": {
-    "react-redux": "^5.0.4",
-    "redux": "^3.6.0",
-    "terra-app-delegate": "^1.6.0",
-    "react-router-dom": "^4.0.0"
+    "react-router-dom": "^4.0.0",
+    "terra-app-delegate": "^1.6.0"
   },
   "peerDependencies": {
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
-    "react-redux": "^5.0.4",
     "react-router-dom": "^4.0.0",
-    "redux": "^3.6.0",
-    "terra-app-delegate": "^1.6.0",
-    "terra-base": "^2.5.0",
-    "terra-button": "^1.10.0",
-    "terra-menu": "^1.2.0",
-    "terra-icon": "^1.11.0"
+    "terra-app-delegate": "^1.6.0"
   },
   "dependencies": {
     "classnames": "^2.2.5",
     "prop-types": "^15.5.8",
-    "terra-base": "^2.5.0",
-    "terra-button": "^1.10.0",
-    "terra-menu": "^1.2.0",
-    "terra-icon": "^1.11.0",
     "terra-layout": "^1.0.0",
     "terra-responsive-element": "^1.11.1"
   },

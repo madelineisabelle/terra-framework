@@ -12,6 +12,7 @@ import NavigationLayoutSrc from '!raw-loader!terra-navigation-layout/src/Navigat
 
 // Example Files
 import NavigationLayoutStandard from './NavigationLayoutStandard';
+import AggregatorTest from './aggregator-test/AggregatorTest';
 
 const NavigationLayoutExamples = () => (
   <div>
@@ -20,6 +21,8 @@ const NavigationLayoutExamples = () => (
     <PropsTable id="props-navigation" src={NavigationLayoutSrc} />
     <h2 id="navigation-layout-standard">Example Navigation Layout</h2>
     <NavigationLayoutStandard />
+    <h2>Aggregator Test</h2>
+    <AggregatorTest />
   </div>
 );
 

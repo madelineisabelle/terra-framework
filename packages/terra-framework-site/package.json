@@ -40,6 +40,7 @@
     "terra-i18n-plugin": "^1.7.0",
     "terra-icon": "^1.12.1",
     "terra-image": "1.11.1",
+    "terra-clinical-header": "^1.7.0",
     "terra-layout": "^1.0.0",
     "terra-list": "^1.12.1",
     "terra-markdown": "^1.9.1",
