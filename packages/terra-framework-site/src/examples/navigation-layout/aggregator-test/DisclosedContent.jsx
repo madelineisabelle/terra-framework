@@ -2,17 +2,16 @@ import React from 'react';
 import Button from 'terra-button';
 import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
+import TextField from 'terra-form/lib/TextField';
 
 class DisclosedContent extends React.Component {
   constructor(props) {
     super(props);
 
-    this.lock = this.lock.bind(this);
-    this.unlock = this.unlock.bind(this);
     this.checkLockState = this.checkLockState.bind(this);
 
     this.state = {
-      isLocked: false,
+      text: undefined,
     };
   }
 
@@ -21,29 +20,17 @@ class DisclosedContent extends React.Component {
   }
 
   checkLockState() {
-    if (this.state.isLocked) {
-      alert(`${this.props.name} Detail is locked`);
-      return Promise.reject();
+    if (this.state.text && this.state.text.length) {
+      if (!confirm(`${this.props.name} has unsaved changes. Do you wish to continue?`)) {
+        return Promise.reject();
+      }
     }
 
     return Promise.resolve();
   }
 
-  unlock() {
-    this.setState({
-      isLocked: false,
-    });
-  }
-
-  lock() {
-    this.setState({
-      isLocked: true,
-    });
-  }
-
   render() {
     const { id, name, requestClose, lock, unlock, clearOnClose } = this.props;
-    const { isLocked } = this.state;
 
     return (
       <ContentContainer header={<Header title={'Disclosed Content'} />}>
@@ -60,8 +47,15 @@ class DisclosedContent extends React.Component {
                 });
             }}
           />
-          {!isLocked && <Button text="Lock" onClick={this.lock} />}
-          {isLocked && <Button text="Unlock" onClick={this.unlock} />}
+          {this.state.text && this.state.text.length ? <p>Dirty!</p> : <p>Not dirty!</p>}
+          <TextField
+            value={this.state.text || ''}
+            onChange={(event) => {
+              this.setState({
+                text: event.target.value,
+              });
+            }}
+          />
         </div>
       </ContentContainer>
     );

@@ -5,9 +5,9 @@ import Section from './Section';
 
 const AggregatorTest = () => (
   <Aggregator>
-    <Section name="Section 1" />
-    <Section name="Section 2" />
-    <Section name="Section 3" maintainSelectionOnClose />
+    <Section name="Section 1" key="1" />
+    <Section name="Section 2" key="2" />
+    <Section name="Section 3" maintainSelectionOnClose key="3" />
   </Aggregator>
 );
 
