@@ -15,17 +15,17 @@ class Section extends React.Component {
     this.unlock = this.unlock.bind(this);
 
     this.state = {
-      selectedIndex: undefined,
+      // selectedIndex: undefined,
       isLocked: false,
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.activeSection !== nextProps.name) {
-      this.setState({
-        selectedIndex: undefined,
-      });
-    }
+    // if (nextProps.activeSection !== nextProps.name) {
+    //   this.setState({
+    //     selectedIndex: undefined,
+    //   });
+    // }
   }
 
   checkLockState() {
@@ -50,11 +50,13 @@ class Section extends React.Component {
   }
 
   handleSelection(event, index) {
-    this.props.requestSelection(this.props.name, this.checkLockState)
+    this.props.requestSelection(this.props.name, this.checkLockState, {
+      index,
+    })
     .then((disclose) => {
-      this.setState({
-        selectedIndex: index,
-      });
+      // this.setState({
+      //   selectedIndex: index,
+      // });
 
       disclose((
         <DisclosedContent
@@ -70,8 +72,13 @@ class Section extends React.Component {
   }
 
   render() {
-    const { name } = this.props;
-    const { selectedIndex, isLocked } = this.state;
+    const { name, activeSection, selectionData } = this.props;
+    const { isLocked } = this.state;
+
+    let selectedIndex;
+    if (name === activeSection && selectionData && selectionData.index !== undefined) {
+      selectedIndex = selectionData.index;
+    }
 
     return (
       <ContentContainer

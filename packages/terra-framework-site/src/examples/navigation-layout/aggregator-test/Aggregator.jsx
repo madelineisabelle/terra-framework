@@ -12,19 +12,21 @@ class Aggregator extends React.Component {
     this.state = {
       activeSection: undefined,
       activeSectionLock: undefined,
+      activeSectionSelectionData: undefined,
       disclosure: undefined,
       disclosureLock: undefined,
     };
   }
 
-  requestSelection(sectionId, sectionLock) {
-    const { activeSectionLock, activeDisclosureLock } = this.state;
+  requestSelection(sectionId, sectionLock, selectionData) {
+    const { activeSectionLock, disclosureLock } = this.state;
 
-    return Promise.all([activeSectionLock && activeSectionLock(), activeDisclosureLock && activeDisclosureLock()])
+    return Promise.all([activeSectionLock && activeSectionLock(), disclosureLock && disclosureLock()])
     .then(() => {
       this.setState({
         activeSection: sectionId,
         activeSectionLock: sectionLock,
+        activeSectionSelectionData: selectionData,
       });
       return this.disclose;
     });
@@ -38,6 +40,7 @@ class Aggregator extends React.Component {
       this.setState({
         activeSection: clearFocus ? undefined : this.state.activeSection,
         activeSectionLock: clearFocus ? undefined : this.state.activeSectionLock,
+        activeSectionSelectionData: clearFocus ? undefined : this.state.activeSectionSelectionData,
         disclosure: undefined,
         disclosureLock: undefined,
       });
@@ -72,6 +75,7 @@ class Aggregator extends React.Component {
           React.Children.map(this.props.children, child => (
             React.cloneElement(child, {
               activeSection: this.state.activeSection,
+              selectionData: this.state.activeSectionSelectionData,
               requestSelection: this.requestSelection,
             })
           ))
