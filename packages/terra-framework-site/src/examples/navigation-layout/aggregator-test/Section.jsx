@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from 'terra-button';
 import SelectableList from 'terra-list/lib/SelectableList';
 import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
@@ -9,9 +10,13 @@ class Section extends React.Component {
     super(props);
 
     this.handleSelection = this.handleSelection.bind(this);
+    this.checkLockState = this.checkLockState.bind(this);
+    this.lock = this.lock.bind(this);
+    this.unlock = this.unlock.bind(this);
 
     this.state = {
       selectedIndex: undefined,
+      isLocked: false,
     };
   }
 
@@ -23,8 +28,29 @@ class Section extends React.Component {
     }
   }
 
+  checkLockState() {
+    if (this.state.isLocked) {
+      alert(`${this.props.name} is locked`);
+      return Promise.reject();
+    }
+
+    return Promise.resolve();
+  }
+
+  unlock() {
+    this.setState({
+      isLocked: false,
+    });
+  }
+
+  lock() {
+    this.setState({
+      isLocked: true,
+    });
+  }
+
   handleSelection(event, index) {
-    this.props.requestSelection(this.props.name, false)
+    this.props.requestSelection(this.props.name, this.checkLockState)
     .then((disclose) => {
       this.setState({
         selectedIndex: index,
@@ -34,7 +60,7 @@ class Section extends React.Component {
         <DisclosedContent
           id={this.props.name}
           name={`Disclosure from ${this.props.name} - Row ${index}`}
-          clearOnClose
+          clearOnClose={!this.props.maintainSelectionOnClose}
         />
       ));
     })
@@ -45,10 +71,18 @@ class Section extends React.Component {
 
   render() {
     const { name } = this.props;
-    const { selectedIndex } = this.state;
+    const { selectedIndex, isLocked } = this.state;
 
     return (
-      <ContentContainer header={<Header title={name} />}>
+      <ContentContainer
+        header={(
+          <Header
+            title={name} endContent={(
+            !isLocked ? <Button text="Lock" onClick={this.lock} /> : <Button text="Unlock" onClick={this.unlock} />
+          )}
+          />
+        )}
+      >
         <SelectableList
           isDivided
           selectedIndexes={selectedIndex !== undefined ? [selectedIndex] : []}

@@ -9,10 +9,24 @@ class DisclosedContent extends React.Component {
 
     this.lock = this.lock.bind(this);
     this.unlock = this.unlock.bind(this);
+    this.checkLockState = this.checkLockState.bind(this);
 
     this.state = {
       isLocked: false,
     };
+  }
+
+  componentDidMount() {
+    this.props.addDisclosureLock(this.checkLockState);
+  }
+
+  checkLockState() {
+    if (this.state.isLocked) {
+      alert(`${this.props.name} Detail is locked`);
+      return Promise.reject();
+    }
+
+    return Promise.resolve();
   }
 
   unlock() {
@@ -28,7 +42,8 @@ class DisclosedContent extends React.Component {
   }
 
   render() {
-    const { id, name, close, lock, unlock, isLocked, clearOnClose } = this.props;
+    const { id, name, requestClose, lock, unlock, clearOnClose } = this.props;
+    const { isLocked } = this.state;
 
     return (
       <ContentContainer header={<Header title={'Disclosed Content'} />}>
@@ -36,7 +51,7 @@ class DisclosedContent extends React.Component {
           <h3>{name}</h3>
           <Button
             text="Close" onClick={() => {
-              close(id, clearOnClose)
+              requestClose(id, clearOnClose)
                 .then(() => {
                   console.log('Close succeeded');
                 })

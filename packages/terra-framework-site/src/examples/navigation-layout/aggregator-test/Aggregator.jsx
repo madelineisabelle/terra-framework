@@ -8,64 +8,40 @@ class Aggregator extends React.Component {
     this.requestSelection = this.requestSelection.bind(this);
     this.disclose = this.disclose.bind(this);
     this.closeDisclosure = this.closeDisclosure.bind(this);
-    this.lock = this.lock.bind(this);
-    this.unlock = this.unlock.bind(this);
 
     this.state = {
-      disclosure: undefined,
       activeSection: undefined,
-      sectionLock: false,
+      activeSectionLock: undefined,
+      disclosure: undefined,
+      disclosureLock: undefined,
     };
   }
 
-  requestSelection(sectionId, lock) {
-    if (this.state.sectionLock) {
-      return Promise.reject();
-    }
+  requestSelection(sectionId, sectionLock) {
+    const { activeSectionLock, activeDisclosureLock } = this.state;
 
-    this.setState({
-      sectionLock: lock,
-      activeSection: sectionId,
+    return Promise.all([activeSectionLock && activeSectionLock(), activeDisclosureLock && activeDisclosureLock()])
+    .then(() => {
+      this.setState({
+        activeSection: sectionId,
+        activeSectionLock: sectionLock,
+      });
+      return this.disclose;
     });
-
-    return Promise.resolve(this.disclose);
   }
 
   closeDisclosure(sectionId, clearFocus) {
-    if (this.state.activeSection !== sectionId || this.state.sectionLock) {
-      return Promise.reject();
-    }
+    const { disclosureLock } = this.state;
 
-    this.setState({
-      disclosure: undefined,
-      activeSection: clearFocus ? undefined : this.state.activeSection,
+    return Promise.all([disclosureLock && disclosureLock()])
+    .then(() => {
+      this.setState({
+        activeSection: clearFocus ? undefined : this.state.activeSection,
+        activeSectionLock: clearFocus ? undefined : this.state.activeSectionLock,
+        disclosure: undefined,
+        disclosureLock: undefined,
+      });
     });
-
-    return Promise.resolve();
-  }
-
-  lock(sectionId) {
-    if (this.state.activeSection !== sectionId) {
-      return Promise.reject();
-    }
-
-    this.setState({
-      sectionLock: true,
-    });
-
-    return Promise.resolve();
-  }
-
-  unlock(sectionId) {
-    if (this.state.activeSection !== sectionId) {
-      return Promise.reject();
-    }
-
-    this.setState({
-      sectionLock: false,
-    });
-
-    return Promise.resolve();
   }
 
   disclose(stuff) {
@@ -84,10 +60,12 @@ class Aggregator extends React.Component {
         isOpen={!!this.state.disclosure}
         panelContent={this.state.disclosure &&
           React.cloneElement(this.state.disclosure, {
-            close: this.closeDisclosure,
-            lock: this.lock,
-            unlock: this.unlock,
-            isLocked: this.state.sectionLock,
+            requestClose: this.closeDisclosure,
+            addDisclosureLock: (lock) => {
+              this.setState({
+                disclosureLock: lock,
+              });
+            },
           })
         }
         mainContent={
