@@ -60,7 +60,7 @@ class Section extends React.Component {
 
       disclose((
         <DisclosedContent
-          key={this.props.name}
+          key={this.props.name + index}
           id={this.props.name}
           name={`Disclosure from ${this.props.name} - Row ${index}`}
           clearOnClose={!this.props.maintainSelectionOnClose}
