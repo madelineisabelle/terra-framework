@@ -5,45 +5,67 @@ class Aggregator extends React.Component {
   constructor(props) {
     super(props);
 
-    this.requestSelection = this.requestSelection.bind(this);
+    this.requestFocus = this.requestFocus.bind(this);
+    this.removeFocus = this.removeFocus.bind(this);
     this.disclose = this.disclose.bind(this);
-    this.closeDisclosure = this.closeDisclosure.bind(this);
+
+    this.getLockPromises = this.getLockPromises.bind(this);
+
+    // We don't need to keep these in state; doing so may trigger unnecessary renders.
+    this.focusSectionLock = undefined;
+    this.disclosureLock = undefined;
 
     this.state = {
-      activeSection: undefined,
-      activeSectionLock: undefined,
-      activeSectionSelectionData: undefined,
+      focusSectionId: undefined,
+      focusSectionData: undefined,
+
       disclosure: undefined,
-      disclosureLock: undefined,
     };
   }
 
-  requestSelection(sectionId, sectionLock, selectionData) {
-    const { activeSectionLock, disclosureLock } = this.state;
+  getLockPromises() {
+    const lockPromises = [Promise.resolve()];
 
-    return Promise.all([activeSectionLock && activeSectionLock(), disclosureLock && disclosureLock()])
+    if (this.focusSectionLock) {
+      lockPromises.push(this.focusSectionLock());
+    }
+
+    if (this.disclosureLock) {
+      lockPromises.push(this.disclosureLock());
+    }
+
+    return lockPromises;
+  }
+
+  requestFocus(sectionId, sectionLock, selectionData) {
+    return Promise.all(this.getLockPromises())
     .then(() => {
+      this.focusSectionLock = sectionLock;
+
       this.setState({
-        activeSection: sectionId,
-        activeSectionLock: sectionLock,
-        activeSectionSelectionData: selectionData,
+        focusSectionId: sectionId,
+        focusSectionData: Object.freeze(selectionData || {}),
       });
       return this.disclose;
     });
   }
 
-  closeDisclosure(sectionId, clearFocus) {
-    const { disclosureLock } = this.state;
+  removeFocus(sectionId) {
+    if (sectionId !== this.state.focusSectionId) {
+      return Promise.reject();
+    }
 
-    return Promise.all([disclosureLock && disclosureLock()])
+    return Promise.all(this.getLockPromises())
     .then(() => {
+      this.focusSectionLock = undefined;
+      this.disclosureLock = undefined;
+
       this.setState({
-        activeSection: clearFocus ? undefined : this.state.activeSection,
-        activeSectionLock: clearFocus ? undefined : this.state.activeSectionLock,
-        activeSectionSelectionData: clearFocus ? undefined : this.state.activeSectionSelectionData,
+        focusSectionId: undefined,
+        focusSectionData: undefined,
         disclosure: undefined,
-        disclosureLock: undefined,
       });
+      return this.disclose;
     });
   }
 
@@ -63,20 +85,23 @@ class Aggregator extends React.Component {
         isOpen={!!this.state.disclosure}
         panelContent={this.state.disclosure &&
           React.cloneElement(this.state.disclosure, {
-            requestClose: this.closeDisclosure,
-            addDisclosureLock: (lock) => {
-              this.setState({
-                disclosureLock: lock,
-              });
+            aggregator: {
+              requestClose: () => { this.removeFocus(this.state.focusSectionId); },
+              addDisclosureLock: (lock) => {
+                this.disclosureLock = lock;
+              },
             },
           })
         }
         mainContent={
           React.Children.map(this.props.children, child => (
             React.cloneElement(child, {
-              activeSection: this.state.activeSection,
-              selectionData: this.state.activeSectionSelectionData,
-              requestSelection: this.requestSelection,
+              aggregator: {
+                activeSection: this.state.focusSectionId,
+                sectionData: this.state.focusSectionData,
+                requestFocus: this.requestFocus,
+                removeFocus: this.removeFocus,
+              },
             })
           ))
         }

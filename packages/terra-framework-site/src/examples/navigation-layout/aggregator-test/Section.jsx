@@ -50,35 +50,37 @@ class Section extends React.Component {
   }
 
   handleSelection(event, index) {
-    this.props.requestSelection(this.props.name, this.checkLockState, {
+    const { aggregator, name, clearFocusOnRepeatSelect } = this.props;
+
+    if (clearFocusOnRepeatSelect && aggregator.activeSection === name && aggregator.sectionData.index === index) {
+      aggregator.removeFocus(name);
+      return;
+    }
+
+    aggregator.requestFocus(name, this.checkLockState, {
       index,
     })
     .then((disclose) => {
-      // this.setState({
-      //   selectedIndex: index,
-      // });
-
       disclose((
         <DisclosedContent
-          key={this.props.name + index}
-          id={this.props.name}
-          name={`Disclosure from ${this.props.name} - Row ${index}`}
-          clearOnClose={!this.props.maintainSelectionOnClose}
+          key={name + index}
+          id={name}
+          name={`Disclosure from ${name} - Row ${index}`}
         />
       ));
     })
     .catch((error) => {
-      console.log('selection denied');
+      console.log(`selection denied ${error}`);
     });
   }
 
   render() {
-    const { name, activeSection, selectionData } = this.props;
+    const { name, aggregator } = this.props;
     const { isLocked } = this.state;
 
     let selectedIndex;
-    if (name === activeSection && selectionData && selectionData.index !== undefined) {
-      selectedIndex = selectionData.index;
+    if (name === aggregator.activeSection && aggregator.sectionData && aggregator.sectionData.index !== undefined) {
+      selectedIndex = aggregator.sectionData.index;
     }
 
     return (

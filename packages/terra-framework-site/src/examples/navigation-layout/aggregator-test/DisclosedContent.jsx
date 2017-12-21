@@ -16,7 +16,7 @@ class DisclosedContent extends React.Component {
   }
 
   componentDidMount() {
-    this.props.addDisclosureLock(this.checkLockState);
+    this.props.aggregator.addDisclosureLock(this.checkLockState);
   }
 
   checkLockState() {
@@ -30,7 +30,7 @@ class DisclosedContent extends React.Component {
   }
 
   render() {
-    const { id, name, requestClose, lock, unlock, clearOnClose } = this.props;
+    const { id, name, aggregator } = this.props;
 
     return (
       <ContentContainer header={<Header title={'Disclosed Content'} />}>
@@ -38,7 +38,7 @@ class DisclosedContent extends React.Component {
           <h3>{name}</h3>
           <Button
             text="Close" onClick={() => {
-              requestClose(id, clearOnClose)
+              aggregator.requestClose()
                 .then(() => {
                   console.log('Close succeeded');
                 })
