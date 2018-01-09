@@ -15,17 +15,8 @@ class Section extends React.Component {
     this.unlock = this.unlock.bind(this);
 
     this.state = {
-      // selectedIndex: undefined,
       isLocked: false,
     };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    // if (nextProps.activeSection !== nextProps.name) {
-    //   this.setState({
-    //     selectedIndex: undefined,
-    //   });
-    // }
   }
 
   checkLockState() {
