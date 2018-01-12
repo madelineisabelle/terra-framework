@@ -37,6 +37,7 @@
     "terra-application-menu-layout": "^1.0.0",
     "terra-base": "^2.6.1",
     "terra-button": "^1.12.0",
+    "terra-clinical-header": "^1.7.0",
     "terra-collapsible-menu-view": "^1.1.1",
     "terra-content-container": "^1.11.1",
     "terra-i18n": "^1.10.1",
