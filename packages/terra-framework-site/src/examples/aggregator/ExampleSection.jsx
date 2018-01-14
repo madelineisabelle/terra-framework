@@ -41,14 +41,14 @@ class Section extends React.Component {
   }
 
   handleSelection(event, index) {
-    const { aggregator, name, clearFocusOnRepeatSelect } = this.props;
+    const { aggregatorDelegate, name } = this.props;
 
-    if (aggregator.sectionIsFocused && aggregator.focusData.index === index) {
-      aggregator.removeFocus();
+    if (aggregatorDelegate.hasFocus && aggregatorDelegate.state.index === index) {
+      aggregatorDelegate.releaseFocus();
       return;
     }
 
-    aggregator.requestFocus(this.checkLockState, {
+    aggregatorDelegate.requestFocus(this.checkLockState, {
       index,
     })
     .then((disclose) => {
@@ -66,12 +66,12 @@ class Section extends React.Component {
   }
 
   render() {
-    const { name, aggregator } = this.props;
+    const { name, aggregatorDelegate } = this.props;
     const { isLocked } = this.state;
 
     let selectedIndex;
-    if (aggregator.sectionIsFocused && aggregator.focusData && aggregator.focusData.index !== undefined) {
-      selectedIndex = aggregator.focusData.index;
+    if (aggregatorDelegate.hasFocus && aggregatorDelegate.state && aggregatorDelegate.state.index !== undefined) {
+      selectedIndex = aggregatorDelegate.state.index;
     }
 
     return (

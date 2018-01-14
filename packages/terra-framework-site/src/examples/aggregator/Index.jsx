@@ -7,7 +7,7 @@ import { version } from 'terra-aggregator/package.json';
 
 // Component Source
 /* eslint-disable import/no-webpack-loader-syntax, import/first, import/no-unresolved, import/extensions */
-import AggregatorSrc from '!raw-loader!terra-application-header-layout/src/ApplicationHeaderLayout.jsx';
+import AggregatorSrc from '!raw-loader!terra-aggregator/src/Aggregator.jsx';
 /* eslint-enable import/no-webpack-loader-syntax, import/first, import/no-unresolved, import/extensions */
 
 // Example Files

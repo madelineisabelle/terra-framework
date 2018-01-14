@@ -21,18 +21,20 @@ class AggregatorExample extends React.Component {
   render() {
     const body = (
       <div>
-        <button onClick={() => { this.setState({ inc: this.state.inc += 1 }); }}>Inc</button>
-        <button onClick={() => { this.forceUpdate(); }}>Update</button>
+        <button onClick={() => { this.setState({ inc: this.state.inc += 1 }); }}>Shuffle</button>
+        <button onClick={() => { this.forceUpdate(); }}>Force Update</button>
         {
           (this.state.inc % 2 === 1) ?
           (
             <Aggregator>
               <Section key="1" name="1" sectionKey="1" />
               <Section key="2" name="2" sectionKey="2" />
+              <Section key="3" name="Section Without Key" />
             </Aggregator>
           ) :
           (
             <Aggregator>
+              <Section key="3" name="Section Without Key" />
               <Section key="2" name="2" sectionKey="2" />
               <Section key="1" name="1" sectionKey="1" />
             </Aggregator>

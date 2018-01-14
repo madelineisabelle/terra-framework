@@ -1,12 +1,17 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import SlidePanel from 'terra-slide-panel';
+
+const propTypes = {
+  children: PropTypes.node,
+};
 
 class Aggregator extends React.Component {
   constructor(props) {
     super(props);
 
     this.requestFocus = this.requestFocus.bind(this);
-    this.removeFocus = this.removeFocus.bind(this);
+    this.releaseFocus = this.releaseFocus.bind(this);
     this.disclose = this.disclose.bind(this);
 
     this.getLockPromises = this.getLockPromises.bind(this);
@@ -36,7 +41,9 @@ class Aggregator extends React.Component {
       let newFocusSelectionData;
       let newDisclosure;
 
-      newChildMap.forEach((value, key, map) => {
+      newChildMap.forEach((value) => {
+        // We check to see if the current section with focus is present within the new props.
+        // If present, the existing state and disclosure are persisted.
         if (value.id === this.state.focusSectionId) {
           newFocusSectionId = value.id;
           newFocusSelectionData = this.state.focusSectionData;
@@ -70,7 +77,7 @@ class Aggregator extends React.Component {
       newMap.set(child, {
         id: childId,
         requestFocusInstance: (lock, state) => this.requestFocus(childId, lock, state),
-        removeFocusInstance: () => this.removeFocus(childId),
+        releaseFocusInstance: () => this.releaseFocus(childId),
       });
     });
 
@@ -78,17 +85,19 @@ class Aggregator extends React.Component {
   }
 
   renderChildren() {
-    return React.Children.map(this.props.children, (child) => {
-      const childData = this.state.childMap.get(child);
+    const { children } = this.props;
+    const { childMap, focusSectionId, focusSectionData } = this.state;
 
-      const childIsActive = this.state.focusSectionId === childData.id;
+    return React.Children.map(children, (child) => {
+      const childData = childMap.get(child);
+      const childIsActive = focusSectionId === childData.id;
 
       return React.cloneElement(child, {
-        aggregator: {
-          sectionIsFocused: childIsActive,
-          focusData: childIsActive ? this.state.focusSectionData : undefined,
+        aggregatorDelegate: {
+          hasFocus: childIsActive,
           requestFocus: childData.requestFocusInstance,
-          removeFocus: childData.removeFocusInstance,
+          releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
+          state: childIsActive ? focusSectionData : undefined,
         },
       });
     });
@@ -121,7 +130,7 @@ class Aggregator extends React.Component {
     });
   }
 
-  removeFocus(sectionId) {
+  releaseFocus(sectionId) {
     if (sectionId !== this.state.focusSectionId) {
       return Promise.reject();
     }
@@ -158,8 +167,8 @@ class Aggregator extends React.Component {
         isOpen={!!this.state.disclosure}
         panelContent={this.state.disclosure &&
           React.cloneElement(this.state.disclosure, {
-            aggregator: {
-              requestClose: () => { this.removeFocus(this.state.focusSectionId); },
+            aggregatorDisclosureDelegate: {
+              requestClose: () => this.releaseFocus(this.state.focusSectionId),
               addDisclosureLock: (lock) => {
                 this.disclosureLock = lock;
               },
@@ -173,5 +182,7 @@ class Aggregator extends React.Component {
     );
   }
 }
+
+Aggregator.propTypes = propTypes;
 
 export default Aggregator;
