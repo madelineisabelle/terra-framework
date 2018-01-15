@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import SlidePanel from 'terra-slide-panel';
+import AppDelegate from 'terra-app-delegate';
 
 const propTypes = {
   children: PropTypes.node,
@@ -28,7 +29,6 @@ class Aggregator extends React.Component {
     this.state = {
       focusSectionId: undefined,
       focusSectionData: undefined,
-      disclosure: undefined,
       childMap: this.buildChildMap(this.props.children),
     };
   }
@@ -39,7 +39,6 @@ class Aggregator extends React.Component {
 
       let newFocusSectionId;
       let newFocusSelectionData;
-      let newDisclosure;
 
       newChildMap.forEach((value) => {
         // We check to see if the current section with focus is present within the new props.
@@ -47,7 +46,6 @@ class Aggregator extends React.Component {
         if (value.id === this.state.focusSectionId) {
           newFocusSectionId = value.id;
           newFocusSelectionData = this.state.focusSectionData;
-          newDisclosure = this.state.disclosure;
         }
       });
 
@@ -55,7 +53,6 @@ class Aggregator extends React.Component {
         childMap: newChildMap,
         focusSectionId: newFocusSectionId,
         focusSectionData: newFocusSelectionData,
-        disclosure: newDisclosure,
       });
     }
   }
@@ -158,26 +155,38 @@ class Aggregator extends React.Component {
   }
 
   render() {
+    const { disclosureIsOpen, disclosureSize, disclosureComponentData } = this.props;
+
     const renderedChildren = this.renderChildren();
 
-    return (
-      <SlidePanel
-        fill
-        panelBehavior="squish"
-        isOpen={!!this.state.disclosure}
-        panelContent={this.state.disclosure &&
-          React.cloneElement(this.state.disclosure, {
-            aggregatorDisclosureDelegate: {
+    let disclosureComponent;
+    if (disclosureIsOpen && disclosureComponentData) {
+      const ComponentClass = AppDelegate.getComponentForDisclosure(disclosureComponentData.name);
+
+      if (ComponentClass) {
+        disclosureComponent = (
+          <ComponentClass
+            key={disclosureComponentData.key}
+            {...disclosureComponentData.props}
+            app={this.props.app}
+            aggregatorDisclosureDelegate={{
               requestClose: () => this.releaseFocus(this.state.focusSectionId),
               addDisclosureLock: (lock) => {
                 this.disclosureLock = lock;
               },
-            },
-          })
-        }
-        mainContent={
-          renderedChildren
-        }
+            }}
+          />
+        );
+      }
+    }
+
+    return (
+      <SlidePanel
+        fill
+        panelBehavior="overlay"
+        isOpen={disclosureIsOpen}
+        panelContent={disclosureComponent}
+        mainContent={renderedChildren}
       />
     );
   }

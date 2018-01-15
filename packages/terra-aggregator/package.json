@@ -1,6 +1,6 @@
 {
   "name": "terra-aggregator",
-  "main": "lib/Aggregator.js",
+  "main": "lib/index.js",
   "version": "0.0.0",
   "description": "The Aggregator is a component used to manage interactions between groups of disparate components.",
   "repository": {
@@ -24,11 +24,14 @@
   "peerDependencies": {
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
-    "terra-base": "^2.5.0"
+    "terra-base": "^2.5.0",
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2"
   },
   "dependencies": {
     "classnames": "^2.2.5",
     "prop-types": "^15.5.8",
+    "terra-app-delegate": "^1.8.0",
     "terra-slide-panel": "^1.14.0"
   },
   "scripts": {

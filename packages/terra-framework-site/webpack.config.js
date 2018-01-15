@@ -84,6 +84,8 @@ module.exports = {
       'react-intl': path.resolve(__dirname, 'node_modules', 'react-intl'),
       moment: path.resolve(__dirname, 'node_modules', 'moment'),
       'react-dom': path.resolve(__dirname, 'node_modules', 'react-dom'),
+      'terra-app-delegate': path.resolve(__dirname, 'node_modules', 'terra-app-delegate'),
+      'react-redux': path.resolve(__dirname, 'node_modules', 'react-redux'),
     },
   },
   output: {

@@ -31,6 +31,8 @@
     "prop-types": "^15.5.8",
     "react-intl": "^2.3.0",
     "react-router-dom": "^4.0.0",
+    "redux": "^3.7.2",
+    "react-redux": "^5.0.6",
     "terra-aggregator": "^0.x",
     "terra-app-delegate": "^1.7.1",
     "terra-application-header-layout": "^1.0.0",
