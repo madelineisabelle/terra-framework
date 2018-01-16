@@ -1,8 +1,7 @@
 import {
   OPEN_DISCLOSURE,
-  CLOSE_DISCLOSURE,
-  RESET,
   SET_FOCUS,
+  CLEAR_FOCUS,
 } from './actionTypes';
 
 const supportedSizes = {
@@ -27,9 +26,7 @@ const aggregator = (state = defaultAggregatorState, action) => {
       newState.disclosureComponentData = action.data;
 
       return newState;
-    case CLOSE_DISCLOSURE:
-      return defaultAggregatorState;
-    case RESET:
+    case CLEAR_FOCUS:
       return defaultAggregatorState;
     case SET_FOCUS:
       return {

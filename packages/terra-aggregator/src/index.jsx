@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Aggregator from './Aggregator';
 
 import aggregatorReducers from './reducers';
-import { openDisclosure, closeDisclosure, reset, setFocus } from './actions';
+import { openDisclosure, clearFocus, setFocus } from './actions';
 
 const mapStateToProps = state => (
   (disclosureState => ({
@@ -18,9 +18,8 @@ const mapStateToProps = state => (
 export { mapStateToProps };
 
 const mapDispatchToProps = dispatch => ({
-  openPanel: (data) => { dispatch(openDisclosure(data)); },
-  closePanel: (data) => { dispatch(closeDisclosure(data)); },
-  reset: () => { dispatch(reset()); },
+  openDisclosure: (data) => { dispatch(openDisclosure(data)); },
+  clearFocus: () => { dispatch(clearFocus()); },
   setFocus: (id, data) => { dispatch(setFocus(id, data)); },
 });
 

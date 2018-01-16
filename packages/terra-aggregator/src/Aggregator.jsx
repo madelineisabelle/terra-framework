@@ -5,6 +5,16 @@ import AppDelegate from 'terra-app-delegate';
 
 const propTypes = {
   children: PropTypes.node,
+  focusItemId: PropTypes.string,
+  focusItemState: PropTypes.object,
+
+  clearFocus: PropTypes.func,
+  setFocus: PropTypes.func,
+  openDisclosure: PropTypes.func,
+
+  disclosureIsOpen: PropTypes.bool,
+  disclosureSize: PropTypes.string,
+  disclosureComponentData: PropTypes.object,
 };
 
 class Aggregator extends React.Component {
@@ -26,8 +36,6 @@ class Aggregator extends React.Component {
     this.sectionKeyCounter = 0;
 
     this.state = {
-      focusSectionId: undefined,
-      focusSectionData: undefined,
       childMap: this.buildChildMap(this.props.children),
     };
   }
@@ -48,13 +56,26 @@ class Aggregator extends React.Component {
       });
 
       if (!focusItemIdIsPresent) {
-        nextProps.reset();
+        nextProps.clearFocus();
       }
 
       this.setState({
         childMap: newChildMap,
       });
     }
+  }
+
+  getLockPromises() {
+    const { focusItemId } = this.props;
+
+    const lockPromises = [Promise.resolve()];
+    const itemLockPromise = this.lockMap.get(focusItemId);
+
+    if (itemLockPromise) {
+      lockPromises.push(itemLockPromise());
+    }
+
+    return lockPromises;
   }
 
   generateSectionKey() {
@@ -73,7 +94,7 @@ class Aggregator extends React.Component {
 
       newMap.set(child, {
         id: childId,
-        requestFocusInstance: (lock, state) => this.requestFocus(childId, lock, state),
+        requestFocusInstance: state => this.requestFocus(childId, state),
         releaseFocusInstance: () => this.releaseFocus(childId),
         registerFocusLockInstance: (lock) => { this.lockMap.set(childId, lock); },
       });
@@ -82,45 +103,9 @@ class Aggregator extends React.Component {
     return newMap;
   }
 
-  renderChildren() {
-    const { children, focusItemId, focusItemState } = this.props;
-    const { childMap } = this.state;
-
-    return React.Children.map(children, (child) => {
-      const childData = childMap.get(child);
-      const childIsActive = focusItemId === childData.id;
-
-      return React.cloneElement(child, {
-        aggregatorDelegate: {
-          hasFocus: childIsActive,
-          registerFocusLock: childData.registerFocusLockInstance,
-          requestFocus: childData.requestFocusInstance,
-          releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
-          state: childIsActive ? focusItemState : undefined,
-        },
-      });
-    });
-  }
-
-  getLockPromises() {
-    const lockPromises = [Promise.resolve()];
-
-    if (this.focusSectionLock) {
-      lockPromises.push(this.focusSectionLock());
-    }
-
-    if (this.disclosureLock) {
-      lockPromises.push(this.disclosureLock());
-    }
-
-    return lockPromises;
-  }
-
-  requestFocus(sectionId, sectionLock, selectionData) {
+  requestFocus(sectionId, selectionData) {
     return Promise.all(this.getLockPromises())
     .then(() => {
-      this.focusSectionLock = sectionLock;
-
       this.props.setFocus(sectionId, Object.freeze(selectionData || {}));
 
       return this.disclose;
@@ -134,15 +119,33 @@ class Aggregator extends React.Component {
 
     return Promise.all(this.getLockPromises())
     .then(() => {
-      this.focusSectionLock = undefined;
-      this.disclosureLock = undefined;
-
-      this.props.reset();
+      this.props.clearFocus();
     });
   }
 
   disclose(stuff) {
-    this.props.openPanel(stuff);
+    this.props.openDisclosure(stuff);
+  }
+
+  renderChildren() {
+    const { children, focusItemId, focusItemState, app } = this.props;
+    const { childMap } = this.state;
+
+    return React.Children.map(children, (child) => {
+      const childData = childMap.get(child);
+      const childIsActive = focusItemId === childData.id;
+
+      return React.cloneElement(child, {
+        app,
+        aggregatorDelegate: {
+          hasFocus: childIsActive,
+          registerFocusLock: childData.registerFocusLockInstance,
+          requestFocus: childData.requestFocusInstance,
+          releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
+          state: childIsActive ? focusItemState : undefined,
+        },
+      });
+    });
   }
 
   render() {
@@ -175,6 +178,7 @@ class Aggregator extends React.Component {
       <SlidePanel
         fill
         panelBehavior="overlay"
+        panelSize={disclosureSize}
         isOpen={disclosureIsOpen}
         panelContent={disclosureComponent}
         mainContent={renderedChildren}
