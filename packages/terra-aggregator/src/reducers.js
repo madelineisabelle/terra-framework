@@ -20,7 +20,7 @@ const aggregator = (state = defaultAggregatorState, action) => {
     case OPEN:
       newState.disclosureIsOpen = true;
       newState.disclosureSize = 'small';
-      newState.disclosureComponentData = action.disclosureComponentData;
+      newState.disclosureComponentData = action.data;
 
       return newState;
     case CLOSE:

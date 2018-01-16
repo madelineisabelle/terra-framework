@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
-// eslint-disable-next-line import/no-extraneous-dependencies
-
 import Aggregator, { reducers as aggregatorReducers } from 'terra-aggregator';
+import AppDelegate from 'terra-app-delegate';
+
 import Section from './ExampleSection';
 
 const store = createStore(

@@ -3,7 +3,9 @@ import Button from 'terra-button';
 import SelectableList from 'terra-list/lib/SelectableList';
 import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
-import DisclosedContent from './DisclosedContent';
+import AppDelegate from 'terra-app-delegate';
+
+import DisclosedContent, { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
 
 class Section extends React.Component {
   constructor(props) {
@@ -52,13 +54,19 @@ class Section extends React.Component {
       index,
     })
     .then((disclose) => {
-      disclose((
-        <DisclosedContent
-          key={name + index}
-          id={name}
-          name={`Disclosure from ${name} - Row ${index}`}
-        />
-      ));
+      disclose({
+        preferredType: 'panel',
+        size: 'small',
+        content: {
+          key: 'DisclosedContent-Demo',
+          name: disclosedContentDisclosureKey,
+          props: {
+            key: name + index,
+            id: name,
+            name: `Disclosure from ${name} - Row ${index}`,
+          },
+        },
+      });
     })
     .catch((error) => {
       console.log(`selection denied ${error}`);

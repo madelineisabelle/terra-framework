@@ -3,6 +3,7 @@ import Button from 'terra-button';
 import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
 import TextField from 'terra-form/lib/TextField';
+import AppDelegate from 'terra-app-delegate';
 
 class DisclosedContent extends React.Component {
   constructor(props) {
@@ -63,3 +64,7 @@ class DisclosedContent extends React.Component {
 }
 
 export default DisclosedContent;
+
+const disclosureKey = 'DisclosedContent';
+AppDelegate.registerComponentForDisclosure(disclosureKey, DisclosedContent);
+export { disclosureKey };

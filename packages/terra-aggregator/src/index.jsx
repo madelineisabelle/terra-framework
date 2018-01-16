@@ -7,7 +7,7 @@ import { open, close } from './actions';
 
 const mapStateToProps = state => (
   (disclosureState => ({
-    disclosureData: disclosureState.disclosureData,
+    disclosureComponentData: disclosureState.disclosureComponentData,
     disclosureSize: disclosureState.disclosureSize,
     disclosureIsOpen: disclosureState.disclosureIsOpen,
   }))(state.aggregator)

@@ -49,6 +49,10 @@ class Aggregator extends React.Component {
         }
       });
 
+      if (!newFocusSectionId) {
+        this.props.closePanel();
+      }
+
       this.setState({
         childMap: newChildMap,
         focusSectionId: newFocusSectionId,
@@ -140,18 +144,13 @@ class Aggregator extends React.Component {
       this.setState({
         focusSectionId: undefined,
         focusSectionData: undefined,
-        disclosure: undefined,
       });
-      return this.disclose;
+      this.props.closePanel();
     });
   }
 
   disclose(stuff) {
-    if (stuff) {
-      this.setState({
-        disclosure: stuff,
-      });
-    }
+    this.props.openPanel(stuff);
   }
 
   render() {
@@ -161,13 +160,13 @@ class Aggregator extends React.Component {
 
     let disclosureComponent;
     if (disclosureIsOpen && disclosureComponentData) {
-      const ComponentClass = AppDelegate.getComponentForDisclosure(disclosureComponentData.name);
+      const ComponentClass = AppDelegate.getComponentForDisclosure(disclosureComponentData.content.name);
 
       if (ComponentClass) {
         disclosureComponent = (
           <ComponentClass
-            key={disclosureComponentData.key}
-            {...disclosureComponentData.props}
+            key={disclosureComponentData.content.key}
+            {...disclosureComponentData.content.props}
             app={this.props.app}
             aggregatorDisclosureDelegate={{
               requestClose: () => this.releaseFocus(this.state.focusSectionId),
