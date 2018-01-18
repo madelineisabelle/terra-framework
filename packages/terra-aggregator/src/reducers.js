@@ -1,5 +1,9 @@
+import { open, push, pop, defaultState } from 'terra-modal-manager/lib/shared/disclosureReducerUtils';
+
 import {
-  OPEN_DISCLOSURE,
+  OPEN,
+  PUSH,
+  POP,
   SET_FOCUS,
   CLEAR_FOCUS,
 } from './actionTypes';
@@ -9,32 +13,29 @@ const supportedSizes = {
   large: 'large',
 };
 
-const defaultAggregatorState = {
-  disclosureSize: supportedSizes.small,
-  disclosureIsOpen: false,
+const defaultAggregatorState = Object.assign({}, defaultState, {
   focusItemId: undefined,
   focusItemData: undefined,
-};
+});
 
 const aggregator = (state = defaultAggregatorState, action) => {
-  const newState = Object.assign({}, state);
-
   switch (action.type) {
-    case OPEN_DISCLOSURE:
-      newState.disclosureIsOpen = true;
-      newState.disclosureSize = 'small';
-      newState.disclosureComponentData = action.data;
-
-      return newState;
+    case OPEN:
+      return Object.assign({}, open(state, action), {
+        size: action.data.size || supportedSizes.small,
+      });
+    case PUSH:
+      return push(state, action);
+    case POP:
+      return pop(state, action);
     case CLEAR_FOCUS:
       return defaultAggregatorState;
     case SET_FOCUS:
-      return {
-        disclosureIsOpen: false,
-        disclosureComponentData: undefined,
+      // We clear any disclosure state when focus changes; a subsequent OPEN action is necessary to present a new disclosure.
+      return Object.assign({}, defaultAggregatorState, {
         focusItemId: action.id,
         focusItemState: action.data,
-      };
+      });
     default:
       return state;
   }

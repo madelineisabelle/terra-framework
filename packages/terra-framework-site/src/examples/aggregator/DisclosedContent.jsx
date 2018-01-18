@@ -1,9 +1,9 @@
 import React from 'react';
 import Button from 'terra-button';
 import ContentContainer from 'terra-content-container';
-import Header from 'terra-clinical-header';
 import TextField from 'terra-form/lib/TextField';
 import AppDelegate from 'terra-app-delegate';
+import ActionHeader from 'terra-clinical-action-header';
 
 class DisclosedContent extends React.Component {
   constructor(props) {
@@ -31,20 +31,52 @@ class DisclosedContent extends React.Component {
   }
 
   render() {
-    const { id, name, aggregatorDisclosureDelegate } = this.props;
+    const { app, name, aggregatorDisclosureDelegate } = this.props;
 
     return (
-      <ContentContainer header={<Header title={'Disclosed Content'} />}>
+      <ContentContainer
+        header={(
+          <ActionHeader
+            title={'Disclosed Content'}
+            onClose={app.closeDisclosure}
+            onBack={app.goBack}
+          />
+        )}
+      >
         <div style={{ padding: '10px' }}>
           <h3>{name}</h3>
           <Button
-            text="Close" onClick={() => {
-              aggregatorDisclosureDelegate.requestClose()
+            text="Dismiss"
+            onClick={() => {
+              app.dismiss()
                 .then(() => {
                   console.log('Close succeeded');
                 })
                 .catch(() => {
                   console.log('Closed failed');
+                });
+            }}
+          />
+          <Button
+            text="Disclose"
+            onClick={() => {
+              app.disclose({
+                preferredType: 'panel',
+                size: 'small',
+                content: {
+                  key: `Nested ${this.props.name}`,
+                  name: 'DisclosedContent',
+                  props: {
+                    key: `Nested ${this.props.name}`,
+                    name: `Nested ${this.props.name}`,
+                  },
+                },
+              })
+                .then(() => {
+                  console.log('disclose succeeded');
+                })
+                .catch(() => {
+                  console.log('disclose failed');
                 });
             }}
           />

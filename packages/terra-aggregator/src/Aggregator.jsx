@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import SlidePanel from 'terra-slide-panel';
 import AppDelegate from 'terra-app-delegate';
+import SlideGroup from 'terra-slide-group';
 
 const propTypes = {
   children: PropTypes.node,
@@ -14,7 +15,7 @@ const propTypes = {
 
   disclosureIsOpen: PropTypes.bool,
   disclosureSize: PropTypes.string,
-  disclosureComponentData: PropTypes.object,
+  disclosureComponentData: PropTypes.array,
 };
 
 class Aggregator extends React.Component {
@@ -148,39 +149,68 @@ class Aggregator extends React.Component {
     });
   }
 
+  buildDisclosureComponents() {
+    const { app, disclosureComponentData, pushDisclosure, popDisclosure, focusItemId } = this.props;
+
+    return disclosureComponentData.map((componentData, index) => {
+      const ComponentClass = AppDelegate.getComponentForDisclosure(componentData.name);
+
+      if (!ComponentClass) {
+        return undefined;
+      }
+
+      const appDelegate = AppDelegate.create({
+        disclose: (data) => {
+          if (data.preferredType === 'panel' || !app) {
+            pushDisclosure(data);
+
+            return Promise.resolve();
+          }
+          return app.disclose(data);
+        },
+        dismiss: (index > 0 ?
+          (data) => {
+            popDisclosure(data);
+            return Promise.resolve();
+          } :
+          () => this.releaseFocus(focusItemId)
+        ),
+        closeDisclosure: () => this.releaseFocus(focusItemId),
+        goBack: index > 0 ? (data) => { popDisclosure(data); } : null,
+      });
+
+      return <ComponentClass key={componentData.key} {...componentData.props} app={appDelegate} />;
+    });
+  }
+
   render() {
-    const { disclosureIsOpen, disclosureSize, disclosureComponentData, focusItemId } = this.props;
+    const { disclosureIsOpen, disclosureSize } = this.props;
 
     const renderedChildren = this.renderChildren();
 
-    let disclosureComponent;
-    if (disclosureIsOpen && disclosureComponentData) {
-      const ComponentClass = AppDelegate.getComponentForDisclosure(disclosureComponentData.content.name);
-
-      if (ComponentClass) {
-        disclosureComponent = (
-          <ComponentClass
-            key={disclosureComponentData.content.key}
-            {...disclosureComponentData.content.props}
-            app={this.props.app}
-            aggregatorDisclosureDelegate={{
-              requestClose: () => this.releaseFocus(focusItemId),
-              addDisclosureLock: (lock) => {
-                this.disclosureLock = lock;
-              },
-            }}
-          />
-        );
-      }
+    const generatedDisclosureComponents = this.buildDisclosureComponents();
+    let updatedDisclosureComponents = [];
+    if (generatedDisclosureComponents.length) {
+      updatedDisclosureComponents = generatedDisclosureComponents.map(disclosureComponent => (
+        React.cloneElement(disclosureComponent, {
+          aggregatorDisclosureDelegate: {
+            addDisclosureLock: (lock) => {
+              this.disclosureLock = lock;
+            },
+          },
+        })
+      ));
     }
 
     return (
       <SlidePanel
         fill
-        panelBehavior="overlay"
+        panelBehavior="squish"
         panelSize={disclosureSize}
         isOpen={disclosureIsOpen}
-        panelContent={disclosureComponent}
+        panelContent={(
+          <SlideGroup items={updatedDisclosureComponents} isAnimated />
+        )}
         mainContent={renderedChildren}
       />
     );

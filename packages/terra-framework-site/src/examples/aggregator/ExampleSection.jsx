@@ -7,6 +7,7 @@ import Header from 'terra-clinical-header';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
 import { disclosureKey as modalContentDisclosureKey } from './ModalContent';
+import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator';
 
 class Section extends React.Component {
   constructor(props) {
@@ -91,7 +92,7 @@ class Section extends React.Component {
       size: 'medium',
       content: {
         key,
-        name: modalContentDisclosureKey,
+        name: modalAggregatorDisclosureKey,
         props: {
           identifier: key,
         },
