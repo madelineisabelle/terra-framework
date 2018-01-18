@@ -25,10 +25,10 @@ class Section extends React.Component {
   }
 
   componentDidMount() {
-    const { aggregatorDelegate } = this.props;
+    const { app } = this.props;
 
-    if (aggregatorDelegate) {
-      aggregatorDelegate.registerFocusLock(this.checkLockState);
+    if (app && app.registerLock) {
+      app.registerLock(this.checkLockState);
     }
   }
 
@@ -57,7 +57,10 @@ class Section extends React.Component {
     const { aggregatorDelegate, name } = this.props;
 
     if (aggregatorDelegate.hasFocus && aggregatorDelegate.state.index === index) {
-      aggregatorDelegate.releaseFocus();
+      aggregatorDelegate.releaseFocus()
+        .catch(() => {
+          console.log('focus release failed; must be locked');
+        });
       return;
     }
 

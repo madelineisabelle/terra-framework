@@ -35,6 +35,7 @@ class Aggregator extends React.Component {
     this.lockMap = new Map();
 
     this.sectionKeyCounter = 0;
+    this.disclosureLocks = {};
 
     this.state = {
       childMap: this.buildChildMap(this.props.children),
@@ -76,6 +77,10 @@ class Aggregator extends React.Component {
       lockPromises.push(itemLockPromise());
     }
 
+    if (this.disclosureLocks) {
+      lockPromises.push(Promise.all(Object.values(this.disclosureLocks).map((lock) => lock && lock())));
+    }
+
     return lockPromises;
   }
 
@@ -97,7 +102,7 @@ class Aggregator extends React.Component {
         id: childId,
         requestFocusInstance: state => this.requestFocus(childId, state),
         releaseFocusInstance: () => this.releaseFocus(childId),
-        registerFocusLockInstance: (lock) => { this.lockMap.set(childId, lock); },
+        registerLockInstance: (lock) => { this.lockMap.set(childId, lock); },
       });
     });
 
@@ -119,9 +124,10 @@ class Aggregator extends React.Component {
     }
 
     return Promise.all(this.getLockPromises())
-    .then(() => {
-      this.props.clearFocus();
-    });
+      .then(() => {
+        this.disclosureLocks = {};
+        this.props.clearFocus();
+      });
   }
 
   disclose(stuff) {
@@ -136,11 +142,14 @@ class Aggregator extends React.Component {
       const childData = childMap.get(child);
       const childIsActive = focusItemId === childData.id;
 
+      const newApp = AppDelegate.clone(app, {
+        registerLock: childData.registerLockInstance,
+      });
+
       return React.cloneElement(child, {
-        app,
+        app: newApp,
         aggregatorDelegate: {
           hasFocus: childIsActive,
-          registerFocusLock: childData.registerFocusLockInstance,
           requestFocus: childData.requestFocusInstance,
           releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
           state: childIsActive ? focusItemState : undefined,
@@ -170,13 +179,43 @@ class Aggregator extends React.Component {
         },
         dismiss: (index > 0 ?
           (data) => {
+            const lockForDisclosure = this.disclosureLocks[componentData.key];
+            if (lockForDisclosure) {
+              return lockForDisclosure()
+                .then(() => {
+                  popDisclosure(data);
+                  this.disclosureLocks[componentData.key] = undefined;
+                })
+            }
+
             popDisclosure(data);
             return Promise.resolve();
           } :
-          () => this.releaseFocus(focusItemId)
+          () => {
+            return this.releaseFocus(focusItemId);
+          }
         ),
-        closeDisclosure: () => this.releaseFocus(focusItemId),
-        goBack: index > 0 ? (data) => { popDisclosure(data); } : null,
+        closeDisclosure: () => {
+          return this.releaseFocus(focusItemId)
+        },
+        goBack: index > 0 ? (data) => {
+          const lockForDisclosure = this.disclosureLocks[componentData.key];
+          if (lockForDisclosure) {
+            return lockForDisclosure()
+              .then(() => {
+                popDisclosure(data);
+                this.disclosureLocks[componentData.key] = undefined;
+              })
+          }
+
+          popDisclosure(data);
+          return Promise.resolve();
+      } : null,
+        registerLock: (lockPromise) => {
+          this.disclosureLocks[componentData.key] = lockPromise;
+
+          return Promise.resolve();
+        },
       });
 
       return <ComponentClass key={componentData.key} {...componentData.props} app={appDelegate} />;
@@ -189,18 +228,6 @@ class Aggregator extends React.Component {
     const renderedChildren = this.renderChildren();
 
     const generatedDisclosureComponents = this.buildDisclosureComponents();
-    let updatedDisclosureComponents = [];
-    if (generatedDisclosureComponents.length) {
-      updatedDisclosureComponents = generatedDisclosureComponents.map(disclosureComponent => (
-        React.cloneElement(disclosureComponent, {
-          aggregatorDisclosureDelegate: {
-            addDisclosureLock: (lock) => {
-              this.disclosureLock = lock;
-            },
-          },
-        })
-      ));
-    }
 
     return (
       <SlidePanel
@@ -209,7 +236,7 @@ class Aggregator extends React.Component {
         panelSize={disclosureSize}
         isOpen={disclosureIsOpen}
         panelContent={(
-          <SlideGroup items={updatedDisclosureComponents} isAnimated />
+          <SlideGroup items={generatedDisclosureComponents} isAnimated />
         )}
         mainContent={renderedChildren}
       />

@@ -17,7 +17,7 @@ class DisclosedContent extends React.Component {
   }
 
   componentDidMount() {
-    this.props.aggregatorDisclosureDelegate.addDisclosureLock(this.checkLockState);
+    this.props.app.registerLock(this.checkLockState);
   }
 
   checkLockState() {
@@ -31,7 +31,7 @@ class DisclosedContent extends React.Component {
   }
 
   render() {
-    const { app, name, aggregatorDisclosureDelegate } = this.props;
+    const { app, name } = this.props;
 
     return (
       <ContentContainer
