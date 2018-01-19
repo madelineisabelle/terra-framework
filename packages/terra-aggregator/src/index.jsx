@@ -1,35 +1,39 @@
 import { connect } from 'react-redux';
 
-import Aggregator from './Aggregator';
+import BaseAggregator from './Aggregator';
 
-import aggregatorReducers from './reducers';
+import generateReducer from './reducers';
 import { openDisclosure, pushDisclosure, popDisclosure, clearFocus, setFocus } from './actions';
 
-const mapStateToProps = state => (
-  (disclosureState => ({
-    disclosureComponentData: disclosureState.componentKeys.map(key => (disclosureState.components[key])),
-    disclosureSize: disclosureState.size,
-    disclosureIsOpen: disclosureState.isOpen,
-    focusItemId: disclosureState.focusItemId,
-    focusItemState: disclosureState.focusItemState,
-  }))(state.aggregator)
-);
+const instanceGenerator = (instanceKey) => {
+  const mapStateToProps = state => (
+    (disclosureState => ({
+      disclosureComponentData: disclosureState.componentKeys.map(key => (disclosureState.components[key])),
+      disclosureSize: disclosureState.size,
+      disclosureIsOpen: disclosureState.isOpen,
+      focusItemId: disclosureState.focusItemId,
+      focusItemState: disclosureState.focusItemState,
+    }))(state[`aggregator-${instanceKey}`])
+  );
 
-export { mapStateToProps };
+  const mapDispatchToProps = dispatch => ({
+    openDisclosure: (data) => { dispatch(openDisclosure(instanceKey, data)); },
+    pushDisclosure: (data) => { dispatch(pushDisclosure(instanceKey, data)); },
+    popDisclosure: (data) => { dispatch(popDisclosure(instanceKey, data)); },
+    clearFocus: () => { dispatch(clearFocus(instanceKey)); },
+    setFocus: (id, data) => { dispatch(setFocus(instanceKey, id, data)); },
+  });
 
-const mapDispatchToProps = dispatch => ({
-  openDisclosure: (data) => { dispatch(openDisclosure(data)); },
-  pushDisclosure: (data) => { dispatch(pushDisclosure(data)); },
-  popDisclosure: (data) => { dispatch(popDisclosure(data)); },
-  clearFocus: () => { dispatch(clearFocus()); },
-  setFocus: (id, data) => { dispatch(setFocus(id, data)); },
-});
-
-export { mapDispatchToProps };
-
-export default connect(mapStateToProps, mapDispatchToProps)(Aggregator);
-
-const reducers = {
-  aggregator: aggregatorReducers,
+  return {
+    Aggregator: connect(mapStateToProps, mapDispatchToProps)(BaseAggregator),
+    reducer: {
+      [`aggregator-${instanceKey}`]: generateReducer(instanceKey),
+    },
+  };
 };
-export { reducers };
+
+export { instanceGenerator };
+
+const { Aggregator, reducer } = instanceGenerator('default');
+export default Aggregator;
+export { reducer as reducers };

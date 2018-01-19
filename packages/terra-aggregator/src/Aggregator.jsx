@@ -78,7 +78,7 @@ class Aggregator extends React.Component {
     }
 
     if (this.disclosureLocks) {
-      lockPromises.push(Promise.all(Object.values(this.disclosureLocks).map((lock) => lock && lock())));
+      lockPromises.push(Promise.all(Object.values(this.disclosureLocks).map(lock => lock && lock())));
     }
 
     return lockPromises;
@@ -185,19 +185,15 @@ class Aggregator extends React.Component {
                 .then(() => {
                   popDisclosure(data);
                   this.disclosureLocks[componentData.key] = undefined;
-                })
+                });
             }
 
             popDisclosure(data);
             return Promise.resolve();
           } :
-          () => {
-            return this.releaseFocus(focusItemId);
-          }
+          () => this.releaseFocus(focusItemId)
         ),
-        closeDisclosure: () => {
-          return this.releaseFocus(focusItemId)
-        },
+        closeDisclosure: () => this.releaseFocus(focusItemId),
         goBack: index > 0 ? (data) => {
           const lockForDisclosure = this.disclosureLocks[componentData.key];
           if (lockForDisclosure) {
@@ -205,12 +201,12 @@ class Aggregator extends React.Component {
               .then(() => {
                 popDisclosure(data);
                 this.disclosureLocks[componentData.key] = undefined;
-              })
+              });
           }
 
           popDisclosure(data);
           return Promise.resolve();
-      } : null,
+        } : null,
         registerLock: (lockPromise) => {
           this.disclosureLocks[componentData.key] = lockPromise;
 

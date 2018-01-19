@@ -34,7 +34,7 @@
     "redux": "^3.7.2",
     "react-redux": "^5.0.6",
     "terra-aggregator": "^0.x",
-    "terra-app-delegate": "^1.7.1",
+    "terra-app-delegate": "file:../../../terra-core/packages/terra-app-delegate",
     "terra-application-header-layout": "^1.0.0",
     "terra-application-menu-layout": "^1.0.0",
     "terra-base": "^2.6.1",

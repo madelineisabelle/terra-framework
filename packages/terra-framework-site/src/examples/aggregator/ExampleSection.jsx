@@ -6,8 +6,7 @@ import Header from 'terra-clinical-header';
 // import AppDelegate from 'terra-app-delegate';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
-import { disclosureKey as modalContentDisclosureKey } from './ModalContent';
-import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator';
+import { disclosureKey as modalAggregatorDisclosureKey, reducers } from './ModalAggregator';
 
 class Section extends React.Component {
   constructor(props) {
@@ -152,3 +151,5 @@ class Section extends React.Component {
 }
 
 export default Section;
+
+export { reducers };

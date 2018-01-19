@@ -6,22 +6,22 @@ import {
   SET_FOCUS,
 } from './actionTypes';
 
-export function openDisclosure(data) {
-  return { type: OPEN, data };
+export function openDisclosure(aggregatorInstanceKey, data) {
+  return { type: OPEN, aggregatorInstanceKey, data };
 }
 
-export function pushDisclosure(data) {
-  return { type: PUSH, data };
+export function pushDisclosure(aggregatorInstanceKey, data) {
+  return { type: PUSH, aggregatorInstanceKey, data };
 }
 
-export function popDisclosure(data) {
-  return { type: POP, data };
+export function popDisclosure(aggregatorInstanceKey, data) {
+  return { type: POP, aggregatorInstanceKey, data };
 }
 
-export function clearFocus() {
-  return { type: CLEAR_FOCUS };
+export function clearFocus(aggregatorInstanceKey) {
+  return { type: CLEAR_FOCUS, aggregatorInstanceKey };
 }
 
-export function setFocus(id, data) {
-  return { type: SET_FOCUS, id, data };
+export function setFocus(aggregatorInstanceKey, id, data) {
+  return { type: SET_FOCUS, aggregatorInstanceKey, id, data };
 }

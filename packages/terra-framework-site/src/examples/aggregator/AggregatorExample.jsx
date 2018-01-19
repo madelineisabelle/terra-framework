@@ -5,12 +5,15 @@ import { Provider } from 'react-redux';
 import Aggregator, { reducers as aggregatorReducers } from 'terra-aggregator';
 import ModalManager, { reducers as modalManagerReducers } from 'terra-modal-manager';
 
-import Section from './ExampleSection';
+import Section, { reducers as sectionReducers } from './ExampleSection';
+
+debugger;
 
 const store = createStore(
   combineReducers(Object.assign({},
     aggregatorReducers,
     modalManagerReducers,
+    sectionReducers,
   )),
 );
 

@@ -18,27 +18,56 @@ const defaultAggregatorState = Object.assign({}, defaultState, {
   focusItemData: undefined,
 });
 
-const aggregator = (state = defaultAggregatorState, action) => {
-  switch (action.type) {
-    case OPEN:
-      return Object.assign({}, open(state, action), {
-        size: action.data.size || supportedSizes.small,
-      });
-    case PUSH:
-      return push(state, action);
-    case POP:
-      return pop(state, action);
-    case CLEAR_FOCUS:
-      return defaultAggregatorState;
-    case SET_FOCUS:
-      // We clear any disclosure state when focus changes; a subsequent OPEN action is necessary to present a new disclosure.
-      return Object.assign({}, defaultAggregatorState, {
-        focusItemId: action.id,
-        focusItemState: action.data,
-      });
-    default:
+const generateReducer = instanceKey => (
+  (state = defaultAggregatorState, action) => {
+    if (action.aggregatorInstanceKey !== instanceKey) {
       return state;
-  }
-};
+    }
 
-export default aggregator;
+    switch (action.type) {
+      case OPEN:
+        return Object.assign({}, open(state, action), {
+          size: action.data.size || supportedSizes.small,
+        });
+      case PUSH:
+        return push(state, action);
+      case POP:
+        return pop(state, action);
+      case CLEAR_FOCUS:
+        return defaultAggregatorState;
+      case SET_FOCUS:
+        // We clear any disclosure state when focus changes; a subsequent OPEN action is necessary to present a new disclosure.
+        return Object.assign({}, defaultAggregatorState, {
+          focusItemId: action.id,
+          focusItemState: action.data,
+        });
+      default:
+        return state;
+    }
+  }
+);
+
+// const aggregator = (state = defaultAggregatorState, action) => {
+//   switch (action.type) {
+//     case OPEN:
+//       return Object.assign({}, open(state, action), {
+//         size: action.data.size || supportedSizes.small,
+//       });
+//     case PUSH:
+//       return push(state, action);
+//     case POP:
+//       return pop(state, action);
+//     case CLEAR_FOCUS:
+//       return defaultAggregatorState;
+//     case SET_FOCUS:
+//       // We clear any disclosure state when focus changes; a subsequent OPEN action is necessary to present a new disclosure.
+//       return Object.assign({}, defaultAggregatorState, {
+//         focusItemId: action.id,
+//         focusItemState: action.data,
+//       });
+//     default:
+//       return state;
+//   }
+// };
+
+export default generateReducer;
