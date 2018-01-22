@@ -16,6 +16,8 @@ const propTypes = {
   disclosureIsOpen: PropTypes.bool,
   disclosureSize: PropTypes.string,
   disclosureComponentData: PropTypes.array,
+
+  render: PropTypes.func,
 };
 
 class Aggregator extends React.Component {
@@ -132,6 +134,8 @@ class Aggregator extends React.Component {
 
   disclose(stuff) {
     this.props.openDisclosure(stuff);
+
+    return Promise.resolve();
   }
 
   renderChildren() {
@@ -224,6 +228,14 @@ class Aggregator extends React.Component {
     const renderedChildren = this.renderChildren();
 
     const generatedDisclosureComponents = this.buildDisclosureComponents();
+
+    if (this.props.render) {
+      return this.props.render(renderedChildren, {
+        isOpen: disclosureIsOpen,
+        size: disclosureSize,
+        components: generatedDisclosureComponents,
+      });
+    }
 
     return (
       <SlidePanel
