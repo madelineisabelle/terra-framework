@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import SlidePanel from 'terra-slide-panel';
 import AppDelegate from 'terra-app-delegate';
-import SlideGroup from 'terra-slide-group';
 
 const propTypes = {
   children: PropTypes.node,
@@ -11,16 +9,12 @@ const propTypes = {
 
   clearFocus: PropTypes.func,
   setFocus: PropTypes.func,
-  openDisclosure: PropTypes.func,
-
-  disclosureIsOpen: PropTypes.bool,
-  disclosureSize: PropTypes.string,
-  disclosureComponentData: PropTypes.array,
 
   render: PropTypes.func,
+  app: AppDelegate.propType,
 };
 
-class Aggregator extends React.Component {
+class AggregatorComp extends React.Component {
   constructor(props) {
     super(props);
 
@@ -86,25 +80,25 @@ class Aggregator extends React.Component {
     return lockPromises;
   }
 
-  generateSectionKey() {
-    const newKey = `aggregator-section-${this.sectionKeyCounter}`;
-
-    this.sectionKeyCounter += 1;
-
-    return newKey;
-  }
-
   buildChildMap(children) {
     const newMap = new Map();
 
     React.Children.forEach(children, (child) => {
-      const childId = child.props.sectionKey ? child.props.sectionKey : this.generateSectionKey();
+      const childId = child.props.sectionKey ? child.props.sectionKey : `aggregator-section-${Date.now()}`;
 
       newMap.set(child, {
         id: childId,
         requestFocusInstance: state => this.requestFocus(childId, state),
         releaseFocusInstance: () => this.releaseFocus(childId),
-        registerLockInstance: (lock) => { this.lockMap.set(childId, lock); },
+        registerLockInstance: (lock) => {
+          // The lock is registered locally so the Aggregator has access to it for focus requests.
+          this.lockMap.set(childId, lock);
+
+          // The lock is also passed through to the app delegate implementation for direct manager integration.
+          if (this.props.app.registerLock) {
+            this.props.app.registerLock(lock);
+          }
+        },
       });
     });
 
@@ -116,7 +110,11 @@ class Aggregator extends React.Component {
     .then(() => {
       this.props.setFocus(sectionId, Object.freeze(selectionData || {}));
 
-      return this.disclose;
+      return data => this.props.app.disclose(data).then((onDismiss) => {
+        onDismiss.then(() => {
+          this.clearFocus();
+        });
+      });
     });
   }
 
@@ -132,126 +130,41 @@ class Aggregator extends React.Component {
       });
   }
 
-  disclose(stuff) {
-    this.props.openDisclosure(stuff);
-
-    return Promise.resolve();
-  }
-
   renderChildren() {
-    const { children, focusItemId, focusItemState, app } = this.props;
+    const { children, focusItemId, focusItemState } = this.props;
     const { childMap } = this.state;
 
     return React.Children.map(children, (child) => {
       const childData = childMap.get(child);
       const childIsActive = focusItemId === childData.id;
 
-      const newApp = AppDelegate.clone(app, {
-        registerLock: childData.registerLockInstance,
-      });
-
       return React.cloneElement(child, {
-        app: newApp,
         aggregatorDelegate: {
           hasFocus: childIsActive,
           requestFocus: childData.requestFocusInstance,
           releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
           state: childIsActive ? focusItemState : undefined,
+          registerLock: childData.registerLockInstance,
         },
       });
-    });
-  }
-
-  buildDisclosureComponents() {
-    const { app, disclosureComponentData, pushDisclosure, popDisclosure, focusItemId } = this.props;
-
-    return disclosureComponentData.map((componentData, index) => {
-      const ComponentClass = AppDelegate.getComponentForDisclosure(componentData.name);
-
-      if (!ComponentClass) {
-        return undefined;
-      }
-
-      const appDelegate = AppDelegate.create({
-        disclose: (data) => {
-          if (data.preferredType === 'panel' || !app) {
-            pushDisclosure(data);
-
-            return Promise.resolve();
-          }
-          return app.disclose(data);
-        },
-        dismiss: (index > 0 ?
-          (data) => {
-            const lockForDisclosure = this.disclosureLocks[componentData.key];
-            if (lockForDisclosure) {
-              return lockForDisclosure()
-                .then(() => {
-                  popDisclosure(data);
-                  this.disclosureLocks[componentData.key] = undefined;
-                });
-            }
-
-            popDisclosure(data);
-            return Promise.resolve();
-          } :
-          () => this.releaseFocus(focusItemId)
-        ),
-        closeDisclosure: () => this.releaseFocus(focusItemId),
-        goBack: index > 0 ? (data) => {
-          const lockForDisclosure = this.disclosureLocks[componentData.key];
-          if (lockForDisclosure) {
-            return lockForDisclosure()
-              .then(() => {
-                popDisclosure(data);
-                this.disclosureLocks[componentData.key] = undefined;
-              });
-          }
-
-          popDisclosure(data);
-          return Promise.resolve();
-        } : null,
-        registerLock: (lockPromise) => {
-          this.disclosureLocks[componentData.key] = lockPromise;
-
-          return Promise.resolve();
-        },
-      });
-
-      return <ComponentClass key={componentData.key} {...componentData.props} app={appDelegate} />;
     });
   }
 
   render() {
-    const { disclosureIsOpen, disclosureSize } = this.props;
-
     const renderedChildren = this.renderChildren();
 
-    const generatedDisclosureComponents = this.buildDisclosureComponents();
-
     if (this.props.render) {
-      return this.props.render(renderedChildren, {
-        isOpen: disclosureIsOpen,
-        size: disclosureSize,
-        components: generatedDisclosureComponents,
-      });
+      return this.props.render(renderedChildren);
     }
 
     return (
-      <SlidePanel
-        fill
-        panelBehavior="squish"
-        panelSize={disclosureSize}
-        isOpen={disclosureIsOpen}
-        panelContent={(
-          <SlideGroup items={generatedDisclosureComponents} isAnimated />
-        )}
-        mainContent={renderedChildren}
-      />
+      <div style={{ height: '100%' }}>
+        {renderedChildren}
+      </div>
     );
   }
 }
 
-Aggregator.propTypes = propTypes;
+AggregatorComp.propTypes = propTypes;
 
-export default Aggregator;
+export default AggregatorComp;
