@@ -7,7 +7,6 @@ import NavigationLayoutBasic from 'terra-navigation-layout/tests/nightwatch/Navi
 import NavigationLayoutComplex from 'terra-navigation-layout/tests/nightwatch/NavigationLayoutComplex';
 import ApplicationHeaderDefault from 'terra-application-header-layout/tests/nightwatch/ApplicationHeaderDefault';
 import ApplicationMenuDefault from 'terra-application-menu-layout/tests/nightwatch/ApplicationMenuDefault';
-import AggregatorDefault from 'terra-aggregator/tests/nightwatch/AggregatorDefault';
 
 import AggregatorExample from './examples/aggregator/Index';
 import LayoutExample from './examples/layout/Index';
@@ -108,12 +107,12 @@ const componentConfig = {
       component: AggregatorExample,
       description: 'Aggregator',
     },
-    testRoot: '/tests/aggregator',
-    tests: [{
-      path: '/default',
-      component: AggregatorDefault,
-      description: 'Default',
-    }],
+    // testRoot: '/tests/aggregator',
+    // tests: [{
+    //   path: '/default',
+    //   component: AggregatorDefault,
+    //   description: 'Default',
+    // }],
   },
 };
 

@@ -8,10 +8,6 @@ const propTypes = {
   app: AppDelegate.propType,
   children: PropTypes.node,
 
-  openDisclosure: PropTypes.func,
-  pushDisclosure: PropTypes.func,
-  popDisclosure: PropTypes.func,
-
   supportedDisclosureTypes: PropTypes.array,
   disclosureIsOpen: PropTypes.bool,
   disclosureSize: PropTypes.string,
@@ -31,6 +27,13 @@ class DisclosureManager extends React.Component {
     // We don't need to keep these in state; doing so may trigger unnecessary renders.
     this.disclosureLocks = {};
     this.dismissMap = {};
+    this.childLock = undefined;
+
+    this.state = {
+      disclosureIsOpen: false,
+      disclosureSize: false,
+      disclosureComponentData: undefined,
+    };
   }
 
   getLockPromises() {
@@ -43,13 +46,64 @@ class DisclosureManager extends React.Component {
     return lockPromises;
   }
 
+  cloneDisclosureState(state) {
+    const newState = Object.assign({}, state);
+    newState.disclosureComponentKeys = Object.assign([], newState.componentKeys);
+    newState.disclosureComponentData = Object.assign({}, newState.components);
+
+    return newState;
+  }
+
+  openDisclosure(data) {
+    this.setState({
+      disclosureIsOpen: true,
+      disclosureSize: data.size || 'small',
+      disclosureComponentKeys: [data.content.key],
+      disclosureComponentData: {
+        [data.content.key]: {
+          key: data.content.key,
+          name: data.content.name,
+          props: data.content.props,
+        },
+      },
+    });
+  }
+
+  pushDisclosure(data) {
+    const newState = this.cloneDisclosureState(this.state);
+
+    newState.disclosureComponentKeys.push(data.content.key);
+    newState.disclosureComponentData[data.content.key] = {
+      name: data.content.name,
+      props: data.content.props,
+      key: data.content.key,
+    };
+  }
+
+  popDisclosure() {
+    const newState = this.cloneDisclosureState(this.state);
+
+    newState.components[newState.componentKeys.pop()] = undefined;
+
+    return newState;
+  }
+
+  closeDisclosure() {
+    this.setState({
+      disclosureIsOpen: false,
+      disclosureSize: false,
+      disclosureComponentKeys: undefined,
+      disclosureComponentData: undefined,
+    });
+  }
+
   generateChildAppDelegate() {
-    const { app, openDisclosure } = this.props;
+    const { app, supportedDisclosureTypes } = this.props;
 
     return AppDelegate.clone(app, {
       disclose: (data) => {
-        if (this.props.supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
-          openDisclosure(data);
+        if (supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
+          this.openDisclosure(data);
           this.dismissMap[data.key] = new Promise();
 
           return Promise.resolve(this.dismissMap[data.key]);
@@ -57,6 +111,7 @@ class DisclosureManager extends React.Component {
         return app.disclose(data);
       },
       registerLock: (lock) => {
+        // TODO: Come back to this and think about how to keep this correct after different child mount.
         this.childLock = lock;
 
         if (app && app.registerLock) {
@@ -77,9 +132,11 @@ class DisclosureManager extends React.Component {
   }
 
   buildDisclosureComponents() {
-    const { app, disclosureComponentData, pushDisclosure, popDisclosure } = this.props;
+    const { app, supportedDisclosureTypes } = this.props;
+    const { disclosureComponentKeys, disclosureComponentData } = this.state;
 
-    return disclosureComponentData.map((componentData, index) => {
+    return disclosureComponentKeys.map((componentKey, index) => {
+      const componentData = disclosureComponentData[componentKey];
       const ComponentClass = AppDelegate.getComponentForDisclosure(componentData.name);
 
       if (!ComponentClass) {
@@ -88,8 +145,8 @@ class DisclosureManager extends React.Component {
 
       const appDelegate = AppDelegate.create({
         disclose: (data) => {
-          if (this.props.supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
-            pushDisclosure(data);
+          if (supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
+            this.pushDisclosure(data);
             this.dismissMap[componentData.key] = new Promise();
 
             return Promise.resolve(this.dismissMap[componentData.key]);
@@ -103,18 +160,26 @@ class DisclosureManager extends React.Component {
               return lockForDisclosure()
                 .then(() => {
                   this.disclosureLocks[componentData.key] = undefined;
-                  popDisclosure(data);
+                  this.popDisclosure(data);
                   this.dismissMap[componentData.key].resolve(data);
                 });
             }
             return Promise.resolve().then(() => {
-              popDisclosure(data);
+              this.popDisclosure(data);
               this.dismissMap[componentData.key].resolve(data);
             });
           } :
-          () => this.props.closeDisclosure()
+          () => {
+            this.closeDisclosure();
+
+            return Promise.resolve();
+          }
         ),
-        closeDisclosure: () => this.props.closeDisclosure(),
+        closeDisclosure: () => {
+          this.closeDisclosure();
+
+          return Promise.resolve();
+        },
         goBack: (index > 0 ?
           (data) => {
             const lockForDisclosure = this.disclosureLocks[componentData.key];
@@ -122,12 +187,12 @@ class DisclosureManager extends React.Component {
               return lockForDisclosure()
                 .then(() => {
                   this.disclosureLocks[componentData.key] = undefined;
-                  popDisclosure(data);
+                  this.popDisclosure(data);
                   this.dismissMap[componentData.key].resolve(data);
                 });
             }
             return Promise.resolve().then(() => {
-              popDisclosure(data);
+              this.popDisclosure(data);
               this.dismissMap[componentData.key].resolve(data);
             });
           } :
@@ -151,7 +216,7 @@ class DisclosureManager extends React.Component {
   }
 
   render() {
-    const { disclosureIsOpen, disclosureSize } = this.props;
+    const { disclosureIsOpen, disclosureSize } = this.state;
 
     const renderedChildren = this.renderChildren();
 

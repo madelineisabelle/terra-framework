@@ -2,25 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
-import { instanceGenerator } from 'terra-aggregator';
+import Aggregator from 'terra-aggregator';
 import ModalManager, { reducers as modalManagerReducers } from 'terra-modal-manager';
 
-import Section, { reducers as sectionReducers } from './ExampleSection';
-
-const aggregator1 = instanceGenerator('1');
-const Aggregator1 = aggregator1.Aggregator;
-const aggregator1Reducer = aggregator1.reducer;
-
-const aggregator2 = instanceGenerator('2');
-const Aggregator2 = aggregator2.Aggregator;
-const aggregator2Reducer = aggregator2.reducer;
+import Section from './ExampleSection';
 
 const store = createStore(
   combineReducers(Object.assign({},
-    aggregator1Reducer,
-    aggregator2Reducer,
     modalManagerReducers,
-    sectionReducers,
+    // sectionReducers,
   )),
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
 );
@@ -52,25 +42,9 @@ class AggregatorExample extends React.Component {
         {
           <Provider store={store}>
             <ModalManager>
-              <Aggregator1>
+              <Aggregator>
                 {this.state.flip ? Object.assign([], sections).reverse() : sections }
-              </Aggregator1>
-              <Aggregator2
-                render={(children, disclosureData) => (
-                  <div
-                    style={{ height: '100%', padding: '15px', border: '5px solid green' }}
-                  >
-                    {children}
-                    {disclosureData.isOpen ? (
-                      <div style={{ padding: '25px', border: '1px dashed red' }}>
-                        {disclosureData.components}
-                      </div>
-                    ) : null }
-                  </div>
-                )}
-              >
-                {this.state.flip ? Object.assign([], sections).reverse() : sections }
-              </Aggregator2>
+              </Aggregator>
             </ModalManager>
           </Provider>
         }

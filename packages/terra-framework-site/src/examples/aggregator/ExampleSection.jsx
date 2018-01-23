@@ -6,7 +6,7 @@ import Header from 'terra-clinical-header';
 // import AppDelegate from 'terra-app-delegate';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
-import { disclosureKey as modalAggregatorDisclosureKey, reducers } from './ModalAggregator';
+// import { disclosureKey as modalAggregatorDisclosureKey, reducers } from './ModalAggregator';
 
 class Section extends React.Component {
   constructor(props) {
@@ -24,10 +24,10 @@ class Section extends React.Component {
   }
 
   componentDidMount() {
-    const { app } = this.props;
+    const { aggregatorDelegate } = this.props;
 
-    if (app && app.registerLock) {
-      app.registerLock(this.checkLockState);
+    if (aggregatorDelegate && aggregatorDelegate.registerLock) {
+      aggregatorDelegate.registerLock(this.checkLockState);
     }
   }
 
@@ -82,24 +82,25 @@ class Section extends React.Component {
       });
     })
     .catch((error) => {
+      debugger;
       console.log(`selection denied ${error}`);
     });
   }
 
   launchModal() {
-    const key = `ModalContent-${Date.now()}`;
+    // const key = `ModalContent-${Date.now()}`;
 
-    this.props.app.disclose({
-      preferredType: 'modal',
-      size: 'medium',
-      content: {
-        key,
-        name: modalAggregatorDisclosureKey,
-        props: {
-          identifier: key,
-        },
-      },
-    });
+    // this.props.app.disclose({
+    //   preferredType: 'modal',
+    //   size: 'medium',
+    //   content: {
+    //     key,
+    //     name: modalAggregatorDisclosureKey,
+    //     props: {
+    //       identifier: key,
+    //     },
+    //   },
+    // });
   }
 
   render() {
@@ -152,4 +153,4 @@ class Section extends React.Component {
 
 export default Section;
 
-export { reducers };
+// export { reducers };

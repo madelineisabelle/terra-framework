@@ -3,28 +3,22 @@ import PropTypes from 'prop-types';
 import AppDelegate from 'terra-app-delegate';
 
 const propTypes = {
-  children: PropTypes.node,
-  focusItemId: PropTypes.string,
-  focusItemState: PropTypes.object,
-
-  clearFocus: PropTypes.func,
-  setFocus: PropTypes.func,
-
-  render: PropTypes.func,
   app: AppDelegate.propType,
+  children: PropTypes.node,
+  render: PropTypes.func,
 };
 
-class AggregatorComp extends React.Component {
+class Aggregator extends React.Component {
   constructor(props) {
     super(props);
 
     this.requestFocus = this.requestFocus.bind(this);
     this.releaseFocus = this.releaseFocus.bind(this);
-    this.disclose = this.disclose.bind(this);
+    this.setFocus = this.setFocus.bind(this);
+    this.resetFocus = this.resetFocus.bind(this);
 
     this.getLockPromises = this.getLockPromises.bind(this);
     this.buildChildMap = this.buildChildMap.bind(this);
-    this.generateSectionKey = this.generateSectionKey.bind(this);
     this.renderChildren = this.renderChildren.bind(this);
 
     // We don't need to keep these in state; doing so may trigger unnecessary renders.
@@ -35,26 +29,40 @@ class AggregatorComp extends React.Component {
 
     this.state = {
       childMap: this.buildChildMap(this.props.children),
+      focusItemId: undefined,
+      focusItemState: undefined,
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    const newFocusItemId = nextProps.focusItemId;
+    const { focusItemId } = this.state;
+
 
     if (nextProps.children !== this.props.children) {
       const newChildMap = this.buildChildMap(nextProps.children);
 
+
       let focusItemIdIsPresent;
+      const newLockMap = new Map();
+
       newChildMap.forEach((value) => {
+        // We need to copy along current locks and remove those of missing children.
+        const existingLock = this.lockMap.get(value.id);
+        if (existingLock) {
+          newLockMap.set(value.id, existingLock);
+        }
+
         // We check to see if the current section with focus is present within the new props.
         // If present, the existing state and disclosure are persisted.
-        if (value.id === newFocusItemId) {
+        if (value.id === focusItemId) {
           focusItemIdIsPresent = true;
         }
       });
 
+      this.lockMap = newLockMap;
+
       if (!focusItemIdIsPresent) {
-        nextProps.clearFocus();
+        this.resetFocus();
       }
 
       this.setState({
@@ -64,7 +72,7 @@ class AggregatorComp extends React.Component {
   }
 
   getLockPromises() {
-    const { focusItemId } = this.props;
+    const { focusItemId } = this.state;
 
     const lockPromises = [Promise.resolve()];
     const itemLockPromise = this.lockMap.get(focusItemId);
@@ -81,6 +89,7 @@ class AggregatorComp extends React.Component {
   }
 
   buildChildMap(children) {
+    const { app } = this.props;
     const newMap = new Map();
 
     React.Children.forEach(children, (child) => {
@@ -95,8 +104,8 @@ class AggregatorComp extends React.Component {
           this.lockMap.set(childId, lock);
 
           // The lock is also passed through to the app delegate implementation for direct manager integration.
-          if (this.props.app.registerLock) {
-            this.props.app.registerLock(lock);
+          if (app && app.registerLock) {
+            app.registerLock(lock);
           }
         },
       });
@@ -106,33 +115,63 @@ class AggregatorComp extends React.Component {
   }
 
   requestFocus(sectionId, selectionData) {
+    const { app } = this.props;
+
     return Promise.all(this.getLockPromises())
     .then(() => {
-      this.props.setFocus(sectionId, Object.freeze(selectionData || {}));
+      this.setFocus(sectionId, Object.freeze(selectionData || {}));
 
-      return data => this.props.app.disclose(data).then((onDismiss) => {
-        onDismiss.then(() => {
-          this.clearFocus();
-        });
-      });
+      if (app && app.disclose) {
+        return (data) => {
+          const disclosePromise = app.disclose(data);
+
+          if (disclosePromise) {
+            return disclosePromise.then((onDismiss) => {
+              onDismiss.then(() => {
+                this.resetFocus();
+              });
+            });
+          }
+
+          return Promise.resolve();
+        };
+      }
+
+      return Promise.resolve();
     });
   }
 
   releaseFocus(sectionId) {
-    if (sectionId !== this.props.focusItemId) {
+    const { focusItemId } = this.state;
+
+    if (sectionId !== focusItemId) {
       return Promise.reject();
     }
 
     return Promise.all(this.getLockPromises())
       .then(() => {
         this.disclosureLocks = {};
-        this.props.clearFocus();
+        this.resetFocus();
       });
   }
 
+  setFocus(id, state) {
+    this.setState({
+      focusItemId: id,
+      focusItemState: state,
+    });
+  }
+
+  resetFocus() {
+    this.setState({
+      focusItemId: undefined,
+      focusItemState: undefined,
+    });
+  }
+
   renderChildren() {
-    const { children, focusItemId, focusItemState } = this.props;
-    const { childMap } = this.state;
+    const { children } = this.props;
+    const { childMap, focusItemId, focusItemState } = this.state;
 
     return React.Children.map(children, (child) => {
       const childData = childMap.get(child);
@@ -165,6 +204,6 @@ class AggregatorComp extends React.Component {
   }
 }
 
-AggregatorComp.propTypes = propTypes;
+Aggregator.propTypes = propTypes;
 
-export default AggregatorComp;
+export default Aggregator;

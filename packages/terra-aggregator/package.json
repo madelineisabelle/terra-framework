@@ -1,6 +1,6 @@
 {
   "name": "terra-aggregator",
-  "main": "lib/index.js",
+  "main": "lib/Aggregator.js",
   "version": "0.0.0",
   "description": "The Aggregator is a component used to manage interactions between groups of disparate components.",
   "repository": {

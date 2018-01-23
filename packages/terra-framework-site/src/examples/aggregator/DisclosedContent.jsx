@@ -17,7 +17,9 @@ class DisclosedContent extends React.Component {
   }
 
   componentDidMount() {
-    this.props.app.registerLock(this.checkLockState);
+    if (this.props.app && this.props.app.registerLock) {
+      this.props.app.registerLock(this.checkLockState);
+    }
   }
 
   checkLockState() {
