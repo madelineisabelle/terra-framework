@@ -7,13 +7,13 @@ import SlideGroup from 'terra-slide-group';
 const propTypes = {
   app: AppDelegate.propType,
   children: PropTypes.node,
-
   supportedDisclosureTypes: PropTypes.array,
-  disclosureIsOpen: PropTypes.bool,
-  disclosureSize: PropTypes.string,
-  disclosureComponentData: PropTypes.array,
 
   render: PropTypes.func,
+};
+
+const defaultProps = {
+  supportedDisclosureTypes: [],
 };
 
 class DisclosureManager extends React.Component {
@@ -31,8 +31,9 @@ class DisclosureManager extends React.Component {
 
     this.state = {
       disclosureIsOpen: false,
-      disclosureSize: false,
-      disclosureComponentData: undefined,
+      disclosureSize: 'small',
+      disclosureComponentKeys: [],
+      disclosureComponentData: {},
     };
   }
 
@@ -91,9 +92,9 @@ class DisclosureManager extends React.Component {
   closeDisclosure() {
     this.setState({
       disclosureIsOpen: false,
-      disclosureSize: false,
-      disclosureComponentKeys: undefined,
-      disclosureComponentData: undefined,
+      disclosureSize: 'small',
+      disclosureComponentKeys: [],
+      disclosureComponentData: {},
     });
   }
 
@@ -104,11 +105,66 @@ class DisclosureManager extends React.Component {
       disclose: (data) => {
         if (supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
           this.openDisclosure(data);
-          this.dismissMap[data.key] = new Promise();
 
-          return Promise.resolve(this.dismissMap[data.key]);
+          return Promise.resolve({
+            onDismiss: new Promise((resolve) => {
+              this.dismissMap[data.content.key] = resolve;
+            }),
+            forceClose: () => {
+              const locksForDisclosures = this.state.disclosureComponentKey.map(key => this.disclosureLocks[key]);
+              if (locksForDisclosures.length) {
+                return Promise.all(locksForDisclosures)
+                  .then(() => {
+                    this.disclosureLocks = {};
+                    this.closeDisclosure();
+
+                    this.state.disclosureComponentKeys.forEach((key) => {
+                      this.dismissMap[key]();
+                    });
+                  })
+                  .then(() => {
+                    this.dismissMap = {};
+                  });
+              }
+
+              this.disclosureLocks = {};
+              return Promise.resolve()
+                .then(() => {
+                  this.closeDisclosure();
+                  this.state.disclosureComponentKeys.forEach((key) => {
+                    this.dismissMap[key]();
+                  });
+                });
+            },
+          });
         }
         return app.disclose(data);
+      },
+      dismiss: (data) => {
+        const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+        if (locksForDisclosures.length) {
+          return Promise.all(locksForDisclosures)
+            .then(() => {
+              this.disclosureLocks = {};
+              this.state.disclosureComponentKeys.forEach((key) => {
+                this.dismissMap[key]();
+              });
+
+              this.closeDisclosure();
+            })
+            .then(() => {
+              this.dismissMap = {};
+            });
+        }
+
+        this.disclosureLocks = {};
+        return Promise.resolve()
+          .then(() => {
+            this.state.disclosureComponentKeys.forEach((key) => {
+              this.dismissMap[key]();
+            });
+            this.closeDisclosure();
+          });
       },
       registerLock: (lock) => {
         // TODO: Come back to this and think about how to keep this correct after different child mount.
@@ -147,9 +203,10 @@ class DisclosureManager extends React.Component {
         disclose: (data) => {
           if (supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
             this.pushDisclosure(data);
-            this.dismissMap[componentData.key] = new Promise();
 
-            return Promise.resolve(this.dismissMap[componentData.key]);
+            return Promise.resolve(new Promise((resolve) => {
+              this.dismissMap[componentData.key] = resolve;
+            }));
           }
           return app.disclose(data);
         },
@@ -161,24 +218,66 @@ class DisclosureManager extends React.Component {
                 .then(() => {
                   this.disclosureLocks[componentData.key] = undefined;
                   this.popDisclosure(data);
-                  this.dismissMap[componentData.key].resolve(data);
+                  this.dismissMap[componentData.key](data);
                 });
             }
             return Promise.resolve().then(() => {
               this.popDisclosure(data);
-              this.dismissMap[componentData.key].resolve(data);
+              this.dismissMap[componentData.key](data);
             });
           } :
           () => {
-            this.closeDisclosure();
+            const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+            if (locksForDisclosures.length) {
+              return Promise.all(locksForDisclosures)
+                .then(() => {
+                  this.disclosureLocks = {};
+                  this.state.disclosureComponentKeys.forEach((key) => {
+                    this.dismissMap[key]();
+                  });
 
-            return Promise.resolve();
+                  this.closeDisclosure();
+                })
+                .then(() => {
+                  this.dismissMap = {};
+                });
+            }
+
+            this.disclosureLocks = {};
+            return Promise.resolve()
+              .then(() => {
+                this.state.disclosureComponentKeys.forEach((key) => {
+                  this.dismissMap[key]();
+                });
+                this.closeDisclosure();
+              });
           }
         ),
         closeDisclosure: () => {
-          this.closeDisclosure();
+          const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+          if (locksForDisclosures.length) {
+            return Promise.all(locksForDisclosures)
+              .then(() => {
+                this.disclosureLocks = {};
+                this.state.disclosureComponentKeys.forEach((key) => {
+                  this.dismissMap[key]();
+                });
 
-          return Promise.resolve();
+                this.closeDisclosure();
+              })
+              .then(() => {
+                this.dismissMap = {};
+              });
+          }
+
+          this.disclosureLocks = {};
+          return Promise.resolve()
+            .then(() => {
+              this.state.disclosureComponentKeys.forEach((key) => {
+                this.dismissMap[key]();
+              });
+              this.closeDisclosure();
+            });
         },
         goBack: (index > 0 ?
           (data) => {
@@ -187,13 +286,13 @@ class DisclosureManager extends React.Component {
               return lockForDisclosure()
                 .then(() => {
                   this.disclosureLocks[componentData.key] = undefined;
+                  this.dismissMap[componentData.key](data);
                   this.popDisclosure(data);
-                  this.dismissMap[componentData.key].resolve(data);
                 });
             }
             return Promise.resolve().then(() => {
+              this.dismissMap[componentData.key](data);
               this.popDisclosure(data);
-              this.dismissMap[componentData.key].resolve(data);
             });
           } :
           null
@@ -246,5 +345,6 @@ class DisclosureManager extends React.Component {
 }
 
 DisclosureManager.propTypes = propTypes;
+DisclosureManager.defaultProps = defaultProps;
 
 export default DisclosureManager;

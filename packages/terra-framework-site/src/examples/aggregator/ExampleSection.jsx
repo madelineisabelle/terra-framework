@@ -82,7 +82,6 @@ class Section extends React.Component {
       });
     })
     .catch((error) => {
-      debugger;
       console.log(`selection denied ${error}`);
     });
   }

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import Aggregator from 'terra-aggregator';
+import DisclosureManager from 'terra-aggregator/lib/DisclosureManager';
 import ModalManager, { reducers as modalManagerReducers } from 'terra-modal-manager';
 
 import Section from './ExampleSection';
@@ -42,9 +43,11 @@ class AggregatorExample extends React.Component {
         {
           <Provider store={store}>
             <ModalManager>
-              <Aggregator>
-                {this.state.flip ? Object.assign([], sections).reverse() : sections }
-              </Aggregator>
+              <DisclosureManager supportedDisclosureTypes={['panel']}>
+                <Aggregator>
+                  {this.state.flip ? Object.assign([], sections).reverse() : sections }
+                </Aggregator>
+              </DisclosureManager>
             </ModalManager>
           </Provider>
         }

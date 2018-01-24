@@ -25,7 +25,6 @@ class Aggregator extends React.Component {
     this.lockMap = new Map();
 
     this.sectionKeyCounter = 0;
-    this.disclosureLocks = {};
 
     this.state = {
       childMap: this.buildChildMap(this.props.children),
@@ -81,10 +80,6 @@ class Aggregator extends React.Component {
       lockPromises.push(itemLockPromise());
     }
 
-    if (this.disclosureLocks) {
-      lockPromises.push(Promise.all(Object.values(this.disclosureLocks).map(lock => lock && lock())));
-    }
-
     return lockPromises;
   }
 
@@ -126,7 +121,7 @@ class Aggregator extends React.Component {
           const disclosePromise = app.disclose(data);
 
           if (disclosePromise) {
-            return disclosePromise.then((onDismiss) => {
+            return disclosePromise.then(({ onDismiss }) => {
               onDismiss.then(() => {
                 this.resetFocus();
               });
@@ -142,6 +137,7 @@ class Aggregator extends React.Component {
   }
 
   releaseFocus(sectionId) {
+    const { app } = this.props;
     const { focusItemId } = this.state;
 
     if (sectionId !== focusItemId) {
@@ -150,8 +146,12 @@ class Aggregator extends React.Component {
 
     return Promise.all(this.getLockPromises())
       .then(() => {
-        this.disclosureLocks = {};
-        this.resetFocus();
+        if (app && app.dismiss) {
+          app.dismiss()
+          .then(() => {
+            this.resetFocus();
+          });
+        }
       });
   }
 
