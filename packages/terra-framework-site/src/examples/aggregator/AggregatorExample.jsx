@@ -43,7 +43,13 @@ class AggregatorExample extends React.Component {
         {
           <Provider store={store}>
             <SlidePanelManager>
-              <Aggregator>
+              <Aggregator
+                render={children => (
+                  <div style={{ height: '100%', padding: '15px' }}>
+                    {children.map((child, index) => React.cloneElement(child, { style: { marginTop: index !== 0 ? '15px' : '0px', border: '1px solid lightgrey' } }))}
+                  </div>
+                )}
+              >
                 {this.state.flip ? Object.assign([], sections).reverse() : sections }
               </Aggregator>
             </SlidePanelManager>

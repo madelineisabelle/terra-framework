@@ -103,7 +103,7 @@ class Section extends React.Component {
   }
 
   render() {
-    const { name, aggregatorDelegate } = this.props;
+    const { name, aggregatorDelegate, ...customProps } = this.props;
     const { isLocked } = this.state;
 
     let selectedIndex;
@@ -113,6 +113,7 @@ class Section extends React.Component {
 
     return (
       <ContentContainer
+        {...customProps}
         header={(
           <Header
             title={name} startContent={(

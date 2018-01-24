@@ -117,8 +117,8 @@ class Aggregator extends React.Component {
       this.setFocus(sectionId, Object.freeze(selectionData || {}));
 
       if (app && app.disclose) {
-        return data => app.disclose(data).then(({ onDismiss, forceClose }) => {
-          this.forceCloseInstance = forceClose;
+        return data => app.disclose(data).then(({ onDismiss, forceDismiss }) => {
+          this.forceDismissInstance = forceDismiss;
 
           onDismiss.then(() => {
             this.resetFocus();
@@ -131,7 +131,6 @@ class Aggregator extends React.Component {
   }
 
   releaseFocus(sectionId) {
-    const { app } = this.props;
     const { focusItemId } = this.state;
 
     if (sectionId !== focusItemId) {
@@ -140,11 +139,13 @@ class Aggregator extends React.Component {
 
     return Promise.all(this.getLockPromises())
       .then(() => {
-        if (this.forceCloseInstance) {
-          this.forceCloseInstance();
+        if (this.forceDismissInstance) {
+          this.forceDismissInstance().then(() => {
+            this.resetFocus();
+          });
+        } else {
+          this.resetFocus();
         }
-
-        this.resetFocus();
       });
   }
 
