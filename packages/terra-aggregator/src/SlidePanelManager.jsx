@@ -11,17 +11,17 @@ const propTypes = {
 };
 
 class SlidePanelManager extends React.Component {
-  static renderSlidePanel(children, disclosureData) {
+  static renderSlidePanel(manager) {
     return (
       <SlidePanel
         fill
         panelBehavior="squish"
-        panelSize={disclosureData.size}
-        isOpen={disclosureData.isOpen}
+        panelSize={manager.disclosure.size}
+        isOpen={manager.disclosure.isOpen}
         panelContent={(
-          <SlideGroup items={disclosureData.components} isAnimated />
+          <SlideGroup items={manager.disclosure.components} isAnimated />
         )}
-        mainContent={children}
+        mainContent={manager.content.components}
       />
     );
   }

@@ -1,9 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames/bind';
 import Modal from 'terra-modal';
 import AppDelegate from 'terra-app-delegate';
 import SlideGroup from 'terra-slide-group';
 import DisclosureManager from './DisclosureManager';
+
+import styles from './NewModalManager.scss';
+
+const cx = classNames.bind(styles);
 
 const propTypes = {
   app: AppDelegate.propType,
@@ -11,21 +16,25 @@ const propTypes = {
 };
 
 class NewModalManager extends React.Component {
-  static renderSlidePanel(children, disclosureData) {
+  static renderModal(manager) {
+    const modalClasses = cx([styles[manager.disclosure.size]]);
+
     return (
       <div style={{ height: '100%' }}>
-        {children}
+        {manager.content.components}
         <Modal
-          isFocused={false}
-          isOpen={disclosureData.isOpen}
+          isFocused={manager.disclosure.isFocused}
+          isOpen={manager.disclosure.isOpen}
           isFullscreen={false}
-          // classNameModal={modalClasses}
-          // onRequestClose={closeModal}
+          classNameModal={modalClasses}
+          onRequestClose={() => {
+            manager.closeDisclosure();
+          }}
           closeOnEsc
           closeOnOutsideClick={false}
           ariaLabel="Modal"
         >
-          <SlideGroup items={disclosureData.components} isAnimated />
+          <SlideGroup items={manager.disclosure.components} isAnimated />
         </Modal>
       </div>
     );
@@ -36,7 +45,7 @@ class NewModalManager extends React.Component {
       <DisclosureManager
         app={this.props.app}
         supportedDisclosureTypes={['modal']}
-        render={NewModalManager.renderSlidePanel}
+        render={NewModalManager.renderModal}
       >
         {this.props.children}
       </DisclosureManager>

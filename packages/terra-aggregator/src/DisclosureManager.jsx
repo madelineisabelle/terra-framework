@@ -19,13 +19,19 @@ class DisclosureManager extends React.Component {
     super(props);
 
     this.getLockPromises = this.getLockPromises.bind(this);
-    this.renderChildren = this.renderChildren.bind(this);
+    this.renderContentComponents = this.renderContentComponents.bind(this);
+    this.renderDisclosureComponents = this.renderDisclosureComponents.bind(this);
+
     this.generateChildAppDelegate = this.generateChildAppDelegate.bind(this);
 
     this.openDisclosure = this.openDisclosure.bind(this);
     this.pushDisclosure = this.pushDisclosure.bind(this);
     this.popDisclosure = this.popDisclosure.bind(this);
     this.closeDisclosure = this.closeDisclosure.bind(this);
+    this.requestDisclosureFocus = this.requestDisclosureFocus.bind(this);
+    this.releaseDisclosureFocus = this.releaseDisclosureFocus.bind(this);
+
+    this.safelyCloseDisclosure = this.safelyCloseDisclosure.bind(this);
 
     // We don't need to keep these in state; doing so may trigger unnecessary renders.
     this.disclosureLocks = {};
@@ -34,6 +40,7 @@ class DisclosureManager extends React.Component {
 
     this.state = {
       disclosureIsOpen: false,
+      disclosureIsFocused: true,
       disclosureSize: 'small',
       disclosureComponentKeys: [],
       disclosureComponentData: {},
@@ -103,46 +110,60 @@ class DisclosureManager extends React.Component {
     });
   }
 
+  requestDisclosureFocus() {
+    this.setState({
+      disclosureIsFocused: true,
+    });
+  }
+
+  releaseDisclosureFocus() {
+    this.setState({
+      disclosureIsFocused: false,
+    });
+  }
+
   generateChildAppDelegate() {
     const { app, supportedDisclosureTypes } = this.props;
 
     return AppDelegate.clone(app, {
       disclose: (data) => {
         if (supportedDisclosureTypes.indexOf(data.preferredType) >= 0 || !app) {
-          this.openDisclosure(data);
+          return this.safelyCloseDisclosure()
+            .then(() => {
+              this.openDisclosure(data);
 
-          return Promise.resolve({
-            onDismiss: new Promise((resolve) => {
-              this.dismissMap[data.content.key] = resolve;
-              debugger;
-            }),
-            forceDismiss: () => {
-              const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
-              if (locksForDisclosures.length) {
-                return Promise.all(locksForDisclosures)
-                  .then(() => {
-                    this.disclosureLocks = {};
-                    this.state.disclosureComponentKeys.forEach((key) => {
-                      this.dismissMap[key]();
+              return {
+                onDismiss: new Promise((resolve) => {
+                  this.dismissMap[data.content.key] = resolve;
+                }),
+                forceDismiss: () => {
+                  const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+                  if (locksForDisclosures.length) {
+                    return Promise.all(locksForDisclosures)
+                      .then(() => {
+                        this.disclosureLocks = {};
+                        this.state.disclosureComponentKeys.forEach((key) => {
+                          this.dismissMap[key]();
+                        });
+
+                        this.closeDisclosure();
+                      })
+                      .then(() => {
+                        this.dismissMap = {};
+                      });
+                  }
+
+                  this.disclosureLocks = {};
+                  return Promise.resolve()
+                    .then(() => {
+                      this.state.disclosureComponentKeys.forEach((key) => {
+                        this.dismissMap[key]();
+                      });
+                      this.closeDisclosure();
                     });
-
-                    this.closeDisclosure();
-                  })
-                  .then(() => {
-                    this.dismissMap = {};
-                  });
-              }
-
-              this.disclosureLocks = {};
-              return Promise.resolve()
-                .then(() => {
-                  this.state.disclosureComponentKeys.forEach((key) => {
-                    this.dismissMap[key]();
-                  });
-                  this.closeDisclosure();
-                });
-            },
-          });
+                },
+              };
+            });
         }
         return app.disclose(data);
       },
@@ -159,7 +180,34 @@ class DisclosureManager extends React.Component {
     });
   }
 
-  renderChildren() {
+  safelyCloseDisclosure() {
+    const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+    if (locksForDisclosures.length) {
+      return Promise.all(locksForDisclosures)
+        .then(() => {
+          this.disclosureLocks = {};
+          this.state.disclosureComponentKeys.forEach((key) => {
+            this.dismissMap[key]();
+          });
+
+          this.closeDisclosure();
+        })
+        .then(() => {
+          this.dismissMap = {};
+        });
+    }
+
+    this.disclosureLocks = {};
+    return Promise.resolve()
+      .then(() => {
+        this.state.disclosureComponentKeys.forEach((key) => {
+          this.dismissMap[key]();
+        });
+        this.closeDisclosure();
+      });
+  }
+
+  renderContentComponents() {
     const { children } = this.props;
 
     return React.Children.map(children, child => React.cloneElement(child, {
@@ -167,7 +215,7 @@ class DisclosureManager extends React.Component {
     }));
   }
 
-  buildDisclosureComponents() {
+  renderDisclosureComponents() {
     const { app, supportedDisclosureTypes } = this.props;
     const { disclosureComponentKeys, disclosureComponentData } = this.state;
 
@@ -194,7 +242,6 @@ class DisclosureManager extends React.Component {
         },
         dismiss: (index > 0 ?
           (data) => {
-            debugger;
             const lockForDisclosure = this.disclosureLocks[componentData.key];
             if (lockForDisclosure) {
               return lockForDisclosure()
@@ -210,7 +257,6 @@ class DisclosureManager extends React.Component {
             });
           } :
           () => {
-            debugger;
             const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
             if (locksForDisclosures.length) {
               return Promise.all(locksForDisclosures)
@@ -286,12 +332,14 @@ class DisclosureManager extends React.Component {
 
           if (app && app.registerLock) {
             // The combination of all managed promise locks is registered to the parent app delegate to ensure
-            // that all are accounted for.
+            // that all are accounted for by the parent.
             return app.registerLock(Promise.all(Object.values(this.disclosureLocks)));
           }
 
           return Promise.resolve();
         },
+        requestFocus: () => Promise.resolve().then(() => { this.requestDisclosureFocus(); }),
+        releaseFocus: () => Promise.resolve().then(() => { this.releaseDisclosureFocus(); }),
       });
 
       return <ComponentClass key={componentData.key} {...componentData.props} app={appDelegate} />;
@@ -299,20 +347,24 @@ class DisclosureManager extends React.Component {
   }
 
   render() {
-    const { disclosureIsOpen, disclosureSize } = this.state;
+    const { render } = this.props;
+    const { disclosureIsOpen, disclosureIsFocused, disclosureSize } = this.state;
 
-    const renderedChildren = this.renderChildren();
-
-    const generatedDisclosureComponents = this.buildDisclosureComponents();
-
-    if (!this.props.render) {
+    if (!render) {
       return null;
     }
 
-    return this.props.render(renderedChildren, {
-      isOpen: disclosureIsOpen,
-      size: disclosureSize,
-      components: generatedDisclosureComponents,
+    return render({
+      closeDisclosure: this.safelyCloseDisclosure,
+      content: {
+        components: this.renderContentComponents(),
+      },
+      disclosure: {
+        isOpen: disclosureIsOpen,
+        isFocused: disclosureIsFocused,
+        size: disclosureSize,
+        components: this.renderDisclosureComponents(),
+      },
     });
   }
 }
