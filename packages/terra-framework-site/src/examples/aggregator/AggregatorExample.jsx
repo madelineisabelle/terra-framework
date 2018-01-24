@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import Aggregator from 'terra-aggregator';
-import DisclosureManager from 'terra-aggregator/lib/DisclosureManager';
+import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
 import ModalManager, { reducers as modalManagerReducers } from 'terra-modal-manager';
 
 import Section from './ExampleSection';
@@ -42,13 +42,11 @@ class AggregatorExample extends React.Component {
         <button onClick={() => { this.forceUpdate(); }}>Force Update</button>
         {
           <Provider store={store}>
-            <ModalManager>
-              <DisclosureManager supportedDisclosureTypes={['panel']}>
-                <Aggregator>
-                  {this.state.flip ? Object.assign([], sections).reverse() : sections }
-                </Aggregator>
-              </DisclosureManager>
-            </ModalManager>
+            <SlidePanelManager>
+              <Aggregator>
+                {this.state.flip ? Object.assign([], sections).reverse() : sections }
+              </Aggregator>
+            </SlidePanelManager>
           </Provider>
         }
       </div>

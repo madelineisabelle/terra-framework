@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import SlidePanel from 'terra-slide-panel';
 import AppDelegate from 'terra-app-delegate';
-import SlideGroup from 'terra-slide-group';
 
 const propTypes = {
   app: AppDelegate.propType,
@@ -111,16 +109,16 @@ class DisclosureManager extends React.Component {
               this.dismissMap[data.content.key] = resolve;
             }),
             forceClose: () => {
-              const locksForDisclosures = this.state.disclosureComponentKey.map(key => this.disclosureLocks[key]);
+              const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
               if (locksForDisclosures.length) {
                 return Promise.all(locksForDisclosures)
                   .then(() => {
                     this.disclosureLocks = {};
-                    this.closeDisclosure();
-
                     this.state.disclosureComponentKeys.forEach((key) => {
                       this.dismissMap[key]();
                     });
+
+                    this.closeDisclosure();
                   })
                   .then(() => {
                     this.dismissMap = {};
@@ -130,10 +128,10 @@ class DisclosureManager extends React.Component {
               this.disclosureLocks = {};
               return Promise.resolve()
                 .then(() => {
-                  this.closeDisclosure();
                   this.state.disclosureComponentKeys.forEach((key) => {
                     this.dismissMap[key]();
                   });
+                  this.closeDisclosure();
                 });
             },
           });
@@ -321,26 +319,15 @@ class DisclosureManager extends React.Component {
 
     const generatedDisclosureComponents = this.buildDisclosureComponents();
 
-    if (this.props.render) {
-      return this.props.render(renderedChildren, {
-        isOpen: disclosureIsOpen,
-        size: disclosureSize,
-        components: generatedDisclosureComponents,
-      });
+    if (!this.props.render) {
+      return null;
     }
 
-    return (
-      <SlidePanel
-        fill
-        panelBehavior="squish"
-        panelSize={disclosureSize}
-        isOpen={disclosureIsOpen}
-        panelContent={(
-          <SlideGroup items={generatedDisclosureComponents} isAnimated />
-        )}
-        mainContent={renderedChildren}
-      />
-    );
+    return this.props.render(renderedChildren, {
+      isOpen: disclosureIsOpen,
+      size: disclosureSize,
+      components: generatedDisclosureComponents,
+    });
   }
 }
 
