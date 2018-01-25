@@ -24,8 +24,6 @@ class Aggregator extends React.Component {
     // We don't need to keep these in state; doing so may trigger unnecessary renders.
     this.lockMap = new Map();
 
-    this.sectionKeyCounter = 0;
-
     this.state = {
       childMap: this.buildChildMap(this.props.children),
       focusItemId: undefined,
@@ -36,13 +34,10 @@ class Aggregator extends React.Component {
   componentWillReceiveProps(nextProps) {
     const { focusItemId } = this.state;
 
-
     if (nextProps.children !== this.props.children) {
-      const newChildMap = this.buildChildMap(nextProps.children);
-
-
       let focusItemIdIsPresent;
       const newLockMap = new Map();
+      const newChildMap = this.buildChildMap(nextProps.children);
 
       newChildMap.forEach((value) => {
         // We need to copy along current locks and remove those of missing children.
@@ -61,7 +56,7 @@ class Aggregator extends React.Component {
       this.lockMap = newLockMap;
 
       if (!focusItemIdIsPresent) {
-        this.resetFocus();
+        this.releaseFocus();
       }
 
       this.setState({
@@ -72,15 +67,9 @@ class Aggregator extends React.Component {
 
   getLockPromises() {
     const { focusItemId } = this.state;
-
-    const lockPromises = [Promise.resolve()];
     const itemLockPromise = this.lockMap.get(focusItemId);
 
-    if (itemLockPromise) {
-      lockPromises.push(itemLockPromise());
-    }
-
-    return lockPromises;
+    return [(itemLockPromise && itemLockPromise()) || Promise.resolve()];
   }
 
   buildChildMap(children) {
@@ -93,7 +82,7 @@ class Aggregator extends React.Component {
       newMap.set(child, {
         id: childId,
         requestFocusInstance: state => this.requestFocus(childId, state),
-        releaseFocusInstance: () => this.releaseFocus(childId),
+        releaseFocusInstance: () => this.releaseFocus(),
         registerLockInstance: (lock) => {
           // The lock is registered locally so the Aggregator has access to it for focus requests.
           this.lockMap.set(childId, lock);
@@ -113,42 +102,74 @@ class Aggregator extends React.Component {
     const { app } = this.props;
 
     return Promise.all(this.getLockPromises())
+      .then(() =>
+        // Focus is released on the currently focused item to ensure a clean start for the next component receiving focus.
+        // The releaseFocus's Promise is returned and inserted into the Promise chain to prevent disclosures from occurring
+        // if the focus release fails.
+        this.releaseFocus()
+          .then(() => {
+            // if (this.onDismissInstance) {
+            //   this.onDismissInstance.then(() => {
+            //     this.setFocus(sectionId, Object.freeze(selectionData || {}));
+            //   });
+            // } else {
+            this.setFocus(sectionId, Object.freeze(selectionData || {}));
+            // }
+          }),
+      )
       .then(() => {
         if (app && app.disclose) {
+          // If the Aggregator is provided with disclosure functionality, the focus request is resolved with a custom
+          // disclose implementation.
           return data => app.disclose(data)
             .then(({ onDismiss, forceDismiss }) => {
+              // The disclosure's forceDismiss instance is cached so it can be called later. If an Aggregator item is currently presenting
+              // a disclosure and releases focus, we will call this forceDismiss instance to force the disclosure to close.
               this.forceDismissInstance = forceDismiss;
+              this.onDismissInstance = onDismiss;
 
-              onDismiss.then(() => {
-                this.resetFocus();
+              // A handler is added deferred onDismiss promise chain to remove the cached forceDismiss instance (the disclosure is closing, so
+              // it is no longer relevant). The handler also resets the focus state if the current item in state matches the item being dismissed.
+              this.onDismissInstance.then(() => {
+                this.forceDismissInstance = undefined;
+                this.onDismissInstance = undefined;
+
+                if (this.state.focusItemId) {
+                  this.resetFocus();
+                }
               });
-            })
-            .then(() => {
-              this.setFocus(sectionId, Object.freeze(selectionData || {}));
+
+              return { onDismiss, forceDismiss };
             });
         }
 
-        this.setFocus(sectionId, Object.freeze(selectionData || {}));
+        // // If no AppDelegate or no disclosure functionality is provided to the Aggregator, the focus request
+        // // is resolved without the disclose function.
+        // this.setFocus(sectionId, Object.freeze(selectionData || {}));
         return Promise.resolve();
       });
   }
 
-  releaseFocus(sectionId) {
-    const { focusItemId } = this.state;
-
-    if (sectionId !== focusItemId) {
-      return Promise.reject();
+  releaseFocus() {
+    if (!this.state.focusItemId) {
+      return Promise.resolve();
     }
+
+    // if (this.state.focusItemId !== sectionId) {
+    //   return Promise.reject();
+    // }
 
     return Promise.all(this.getLockPromises())
       .then(() => {
         if (this.forceDismissInstance) {
-          this.forceDismissInstance().then(() => {
+          return this.forceDismissInstance().then(() => {
+            debugger;
             this.resetFocus();
           });
-        } else {
-          this.resetFocus();
         }
+        return Promise.resolve().then(() => {
+          this.resetFocus();
+        });
       });
   }
 

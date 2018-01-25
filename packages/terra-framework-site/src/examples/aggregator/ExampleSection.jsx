@@ -6,7 +6,7 @@ import Header from 'terra-clinical-header';
 // import AppDelegate from 'terra-app-delegate';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
-// import { disclosureKey as modalAggregatorDisclosureKey, reducers } from './ModalAggregator';
+import { disclosureKey as modalAggregatorDisclosureKey, reducers } from './ModalAggregator';
 
 class Section extends React.Component {
   constructor(props) {
@@ -87,19 +87,25 @@ class Section extends React.Component {
   }
 
   launchModal() {
-    // const key = `ModalContent-${Date.now()}`;
+    const key = `ModalContent-${Date.now()}`;
 
-    // this.props.app.disclose({
-    //   preferredType: 'modal',
-    //   size: 'medium',
-    //   content: {
-    //     key,
-    //     name: modalAggregatorDisclosureKey,
-    //     props: {
-    //       identifier: key,
-    //     },
-    //   },
-    // });
+    this.props.aggregatorDelegate.requestFocus()
+    .then((disclose) => {
+      disclose({
+        preferredType: 'modal',
+        size: 'small',
+        content: {
+          key,
+          name: modalAggregatorDisclosureKey,
+          props: {
+            identifier: key,
+          },
+        },
+      });
+    })
+    .catch((error) => {
+      console.log(`selection denied ${error}`);
+    });
   }
 
   render() {

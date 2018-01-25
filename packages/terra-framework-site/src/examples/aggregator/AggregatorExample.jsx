@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { createStore, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import Aggregator from 'terra-aggregator';
+import NewModalManager from 'terra-aggregator/lib/NewModalManager';
 import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
 import ModalManager, { reducers as modalManagerReducers } from 'terra-modal-manager';
 
@@ -42,17 +43,19 @@ class AggregatorExample extends React.Component {
         <button onClick={() => { this.forceUpdate(); }}>Force Update</button>
         {
           <Provider store={store}>
-            <SlidePanelManager>
-              <Aggregator
-                render={children => (
-                  <div style={{ height: '100%', padding: '15px' }}>
-                    {children.map((child, index) => React.cloneElement(child, { style: { marginTop: index !== 0 ? '15px' : '0px', border: '1px solid lightgrey' } }))}
-                  </div>
-                )}
-              >
-                {this.state.flip ? Object.assign([], sections).reverse() : sections }
-              </Aggregator>
-            </SlidePanelManager>
+            <NewModalManager>
+              <SlidePanelManager>
+                <Aggregator
+                  render={children => (
+                    <div style={{ height: '100%', padding: '15px' }}>
+                      {children.map((child, index) => React.cloneElement(child, { style: { marginTop: index !== 0 ? '15px' : '0px', border: '1px solid lightgrey' } }))}
+                    </div>
+                  )}
+                >
+                  {this.state.flip ? Object.assign([], sections).reverse() : sections }
+                </Aggregator>
+              </SlidePanelManager>
+            </NewModalManager>
           </Provider>
         }
       </div>

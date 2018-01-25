@@ -3,13 +3,9 @@ import PropTypes from 'prop-types';
 import AppDelegate from 'terra-app-delegate';
 import ContentContainer from 'terra-content-container';
 import ActionHeader from 'terra-clinical-action-header';
-// import Aggregator, { reducers as aggregatorReducers } from 'terra-aggregator';
-
-import { instanceGenerator } from 'terra-aggregator';
+import Aggregator from 'terra-aggregator';
 
 import Section from './ExampleSection';
-
-const { Aggregator, reducer } = instanceGenerator('ModalAggregator');
 
 class ModalAggregator extends React.Component {
   constructor(props) {
@@ -50,5 +46,3 @@ export default ModalAggregator;
 const disclosureKey = 'ModalAggregator';
 AppDelegate.registerComponentForDisclosure(disclosureKey, ModalAggregator);
 export { disclosureKey };
-
-export { reducer as reducers };
