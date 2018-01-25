@@ -45,7 +45,7 @@ class DisclosedContent extends React.Component {
       <ContentContainer
         header={(
           <ActionHeader
-            title={'Disclosed Content'}
+            title={`Disclosed Content - ${name}`}
             onClose={app.closeDisclosure}
             onBack={app.goBack}
           />

@@ -11,9 +11,10 @@ import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator
 const propTypes = {
   aggregatorDelegate: PropTypes.object,
   name: PropTypes.string,
+  disclosureType: PropTypes.string,
 };
 
-class PanelSection extends React.Component {
+class DisclosureSection extends React.Component {
   constructor(props) {
     super(props);
 
@@ -21,7 +22,6 @@ class PanelSection extends React.Component {
     this.checkLockState = this.checkLockState.bind(this);
     this.lock = this.lock.bind(this);
     this.unlock = this.unlock.bind(this);
-    this.launchModal = this.launchModal.bind(this);
 
     this.state = {
       isLocked: false,
@@ -74,7 +74,7 @@ class PanelSection extends React.Component {
     .then(({ disclose }) => {
       if (disclose) {
         disclose({
-          preferredType: 'panel',
+          preferredType: this.props.disclosureType,
           size: 'small',
           content: {
             key: 'DisclosedContent-Demo',
@@ -93,32 +93,6 @@ class PanelSection extends React.Component {
     });
   }
 
-  launchModal() {
-    const { aggregatorDelegate } = this.props;
-
-    const key = `ModalContent-${Date.now()}`;
-
-    aggregatorDelegate.requestFocus()
-      .then(({ disclose }) => {
-        if (disclose) {
-          disclose({
-            preferredType: 'modal',
-            size: 'small',
-            content: {
-              key,
-              name: modalAggregatorDisclosureKey,
-              props: {
-                identifier: key,
-              },
-            },
-          });
-        }
-      })
-      .catch((error) => {
-        console.log(`Section - Selection denied - ${error}`);
-      });
-  }
-
   render() {
     const { name, aggregatorDelegate, ...customProps } = this.props;
     const { isLocked } = this.state;
@@ -135,8 +109,7 @@ class PanelSection extends React.Component {
           <Header
             title={name} startContent={(
               <div style={{ marginRight: '10px' }}>
-                {aggregatorDelegate.hasFocus ? (!isLocked ? <Button text="Lock" onClick={this.lock} /> : <Button text="Unlock" onClick={this.unlock} />) : null}
-                {/* <Button text="Modal" onClick={this.launchModal} /> */}
+                {!isLocked ? <Button text="Lock" onClick={this.lock} isDisabled={!aggregatorDelegate.hasFocus} /> : <Button text="Unlock" onClick={this.unlock} />}
               </div>
           )}
           />
@@ -168,6 +141,6 @@ class PanelSection extends React.Component {
   }
 }
 
-PanelSection.propTypes = propTypes;
+DisclosureSection.propTypes = propTypes;
 
-export default PanelSection;
+export default DisclosureSection;

@@ -1,19 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Aggregator from 'terra-aggregator';
-import NewModalManager from 'terra-aggregator/lib/NewModalManager';
-import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
 
-import PanelSection from './PanelSection';
+import DisclosureSection from './DisclosureSection';
 
 const propTypes = {
   size: PropTypes.string,
 };
 
 const sections = Object.freeze([
-  <PanelSection key="1" name="Section 0" aggregatorKey="Section 0" />,
-  <PanelSection key="2" name="Section 1" aggregatorKey="Section 1" />,
-  <PanelSection key="3" name="Section 2" aggregatorKey="Section 2" />,
+  <DisclosureSection key="1" name="Section 0" aggregatorKey="Section 0" />,
+  <DisclosureSection key="2" name="Section 1" aggregatorKey="Section 1" />,
+  <DisclosureSection key="3" name="Section 2" aggregatorKey="Section 2" />,
 ]);
 
 class SimpleAggregatorExample extends React.Component {

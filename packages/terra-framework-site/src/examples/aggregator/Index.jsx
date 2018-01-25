@@ -15,6 +15,7 @@ import SimpleAggregatorExample from './SimpleAggregatorExample';
 import PanelAggregatorExample from './PanelAggregatorExample';
 import ModalAggregtorExample from './ModalAggregtorExample';
 import AggregatorInModalExample from './AggregatorInModalExample';
+import CombinedDisclosureExample from './CombinedDisclosureExample';
 
 const NavigationExamples = () => (
   <div>
@@ -23,9 +24,20 @@ const NavigationExamples = () => (
     <PropsTable id="props-header" src={AggregatorSrc} componentName="Aggregator" />
     <h2 id="aggregator-example">Examples</h2>
     <SimpleAggregatorExample />
+    <br />
+    <br />
     <PanelAggregatorExample />
+    <br />
+    <br />
     <ModalAggregtorExample />
+    <br />
+    <br />
+    <CombinedDisclosureExample />
+    <br />
+    <br />
     <AggregatorInModalExample />
+    <br />
+    <br />
   </div>
 );
 
