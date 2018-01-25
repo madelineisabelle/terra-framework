@@ -3,10 +3,9 @@ import Button from 'terra-button';
 import SelectableList from 'terra-list/lib/SelectableList';
 import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
-// import AppDelegate from 'terra-app-delegate';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
-import { disclosureKey as modalAggregatorDisclosureKey, reducers } from './ModalAggregator';
+import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator';
 
 class Section extends React.Component {
   constructor(props) {
@@ -66,7 +65,7 @@ class Section extends React.Component {
     aggregatorDelegate.requestFocus({
       index,
     })
-    .then((disclose) => {
+    .then(({ disclose }) => {
       disclose({
         preferredType: 'panel',
         size: 'small',
@@ -87,25 +86,27 @@ class Section extends React.Component {
   }
 
   launchModal() {
+    const { aggregatorDelegate } = this.props;
+
     const key = `ModalContent-${Date.now()}`;
 
-    this.props.aggregatorDelegate.requestFocus()
-    .then((disclose) => {
-      disclose({
-        preferredType: 'modal',
-        size: 'small',
-        content: {
-          key,
-          name: modalAggregatorDisclosureKey,
-          props: {
-            identifier: key,
+    aggregatorDelegate.requestFocus()
+      .then(({ disclose }) => {
+        disclose({
+          preferredType: 'modal',
+          size: 'small',
+          content: {
+            key,
+            name: modalAggregatorDisclosureKey,
+            props: {
+              identifier: key,
+            },
           },
-        },
+        });
+      })
+      .catch((error) => {
+        console.log(`selection denied ${error}`);
       });
-    })
-    .catch((error) => {
-      console.log(`selection denied ${error}`);
-    });
   }
 
   render() {

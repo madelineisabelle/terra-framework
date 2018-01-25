@@ -22,7 +22,7 @@ class Aggregator extends React.Component {
     this.renderChildren = this.renderChildren.bind(this);
 
     // We don't need to keep these in state; doing so may trigger unnecessary renders.
-    this.lockMap = new Map();
+    this.lockMap = {};
 
     this.state = {
       childMap: this.buildChildMap(this.props.children),
@@ -34,16 +34,18 @@ class Aggregator extends React.Component {
   componentWillReceiveProps(nextProps) {
     const { focusItemId } = this.state;
 
+    // On the off-chance that the consuming component is using an immutable child array,
+    // we will only rebuild the child data if a difference is detected.
     if (nextProps.children !== this.props.children) {
       let focusItemIdIsPresent;
-      const newLockMap = new Map();
+      const newLockMap = {};
       const newChildMap = this.buildChildMap(nextProps.children);
 
       newChildMap.forEach((value) => {
         // We need to copy along current locks and remove those of missing children.
-        const existingLock = this.lockMap.get(value.id);
+        const existingLock = this.lockMap[value.id];
         if (existingLock) {
-          newLockMap.set(value.id, existingLock);
+          newLockMap[value.id] = existingLock;
         }
 
         // We check to see if the current section with focus is present within the new props.
@@ -66,10 +68,9 @@ class Aggregator extends React.Component {
   }
 
   getLockPromises() {
-    const { focusItemId } = this.state;
-    const itemLockPromise = this.lockMap.get(focusItemId);
+    const itemLockPromise = this.lockMap[this.state.focusItemId];
 
-    return [(itemLockPromise && itemLockPromise()) || Promise.resolve()];
+    return [itemLockPromise && itemLockPromise()];
   }
 
   buildChildMap(children) {
@@ -85,7 +86,7 @@ class Aggregator extends React.Component {
         releaseFocusInstance: () => this.releaseFocus(),
         registerLockInstance: (lock) => {
           // The lock is registered locally so the Aggregator has access to it for focus requests.
-          this.lockMap.set(childId, lock);
+          this.lockMap[childId] = lock;
 
           // The lock is also passed through to the app delegate implementation for direct manager integration.
           if (app && app.registerLock) {
@@ -108,20 +109,16 @@ class Aggregator extends React.Component {
         // if the focus release fails.
         this.releaseFocus()
           .then(() => {
-            // if (this.onDismissInstance) {
-            //   this.onDismissInstance.then(() => {
-            //     this.setFocus(sectionId, Object.freeze(selectionData || {}));
-            //   });
-            // } else {
             this.setFocus(sectionId, Object.freeze(selectionData || {}));
-            // }
           }),
       )
       .then(() => {
+        const focusRequestPayload = {};
+
+        // If the Aggregator is provided with disclosure functionality, the focus request is resolved with a custom
+        // disclose implementation.
         if (app && app.disclose) {
-          // If the Aggregator is provided with disclosure functionality, the focus request is resolved with a custom
-          // disclose implementation.
-          return data => app.disclose(data)
+          focusRequestPayload.disclose = data => app.disclose(data)
             .then(({ onDismiss, forceDismiss }) => {
               // The disclosure's forceDismiss instance is cached so it can be called later. If an Aggregator item is currently presenting
               // a disclosure and releases focus, we will call this forceDismiss instance to force the disclosure to close.
@@ -143,30 +140,30 @@ class Aggregator extends React.Component {
             });
         }
 
-        // // If no AppDelegate or no disclosure functionality is provided to the Aggregator, the focus request
-        // // is resolved without the disclose function.
-        // this.setFocus(sectionId, Object.freeze(selectionData || {}));
-        return Promise.resolve();
+        return focusRequestPayload;
       });
   }
 
   releaseFocus() {
+    // If nothing is currently in focus, we can resolve immediately.
     if (!this.state.focusItemId) {
       return Promise.resolve();
     }
 
-    // if (this.state.focusItemId !== sectionId) {
-    //   return Promise.reject();
-    // }
-
     return Promise.all(this.getLockPromises())
       .then(() => {
+        // If forceDismissInstance is present, a disclosure must have been opened by the currently focused
+        // Aggregator item. Therefore, we will call the forceDismissInstance in order to keep things in sync. The promise
+        // returned by forceDismissInstance will be inserted into the Promise chain.
+        //
+        // The focus is only reset if the disclosure was dismissed successfully.
         if (this.forceDismissInstance) {
           return this.forceDismissInstance().then(() => {
-            debugger;
             this.resetFocus();
           });
         }
+
+        // If a previous disclosure is not detected, we can immediately resolve and reset the focus.
         return Promise.resolve().then(() => {
           this.resetFocus();
         });
@@ -215,7 +212,7 @@ class Aggregator extends React.Component {
     }
 
     return (
-      <div style={{ height: '100%' }}>
+      <div>
         {renderedChildren}
       </div>
     );

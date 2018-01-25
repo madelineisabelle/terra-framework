@@ -168,7 +168,8 @@ class DisclosureManager extends React.Component {
         return app.disclose(data);
       },
       registerLock: (lock) => {
-        // TODO: Come back to this and think about how to keep this correct after different child mount.
+        // This might be a problem if we want to support more than one child. We don't have a good way of storing
+        // multiple child locks without registering some sort of key.
         this.childLock = lock;
 
         if (app && app.registerLock) {

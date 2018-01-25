@@ -12,7 +12,6 @@ import Section from './ExampleSection';
 const store = createStore(
   combineReducers(Object.assign({},
     modalManagerReducers,
-    // sectionReducers,
   )),
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
 );
@@ -20,6 +19,12 @@ const store = createStore(
 const propTypes = {
   size: PropTypes.string,
 };
+
+const sections = Object.freeze([
+  <Section key="1" name="1" sectionKey="1" />,
+  <Section key="2" name="2" sectionKey="2" />,
+  <Section key="3" name="3" sectionKey="3" />,
+]);
 
 class AggregatorExample extends React.Component {
   constructor(props) {
@@ -31,12 +36,6 @@ class AggregatorExample extends React.Component {
   }
 
   render() {
-    const sections = [
-      <Section key="1" name="1" sectionKey="1" />,
-      <Section key="2" name="2" sectionKey="2" />,
-      <Section key="3" name="3" sectionKey="3" />,
-    ];
-
     const body = (
       <div>
         <button onClick={() => { this.setState({ flip: !this.state.flip }); }}>Flip</button>
