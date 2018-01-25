@@ -11,15 +11,21 @@ import AggregatorSrc from '!raw-loader!terra-aggregator/src/Aggregator.jsx';
 /* eslint-enable import/no-webpack-loader-syntax, import/first, import/no-unresolved, import/extensions */
 
 // Example Files
-import AggregatorExample from './AggregatorExample';
+import SimpleAggregatorExample from './SimpleAggregatorExample';
+import PanelAggregatorExample from './PanelAggregatorExample';
+import ModalAggregtorExample from './ModalAggregtorExample';
+import AggregatorInModalExample from './AggregatorInModalExample';
 
 const NavigationExamples = () => (
   <div>
     <div id="version">Version: {version}</div>
     <Markdown id="readme" src={ReadMe} />
     <PropsTable id="props-header" src={AggregatorSrc} componentName="Aggregator" />
-    <h2 id="aggregator-example">Example</h2>
-    <AggregatorExample />
+    <h2 id="aggregator-example">Examples</h2>
+    <SimpleAggregatorExample />
+    <PanelAggregatorExample />
+    <ModalAggregtorExample />
+    <AggregatorInModalExample />
   </div>
 );
 

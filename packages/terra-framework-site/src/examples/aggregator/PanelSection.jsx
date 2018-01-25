@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Button from 'terra-button';
 import SelectableList from 'terra-list/lib/SelectableList';
 import ContentContainer from 'terra-content-container';
@@ -7,7 +8,12 @@ import Header from 'terra-clinical-header';
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
 import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator';
 
-class Section extends React.Component {
+const propTypes = {
+  aggregatorDelegate: PropTypes.object,
+  name: PropTypes.string,
+};
+
+class PanelSection extends React.Component {
   constructor(props) {
     super(props);
 
@@ -32,7 +38,7 @@ class Section extends React.Component {
 
   checkLockState() {
     if (this.state.isLocked) {
-      alert(`${this.props.name} is locked`);
+      alert(`${this.props.name} is locked, so the focus request was denied.`);
       return Promise.reject();
     }
 
@@ -57,7 +63,7 @@ class Section extends React.Component {
     if (aggregatorDelegate.hasFocus && aggregatorDelegate.state.index === index) {
       aggregatorDelegate.releaseFocus()
         .catch(() => {
-          console.log('focus release failed; must be locked');
+          console.log('Section - Focus release failed. Something must be locked.');
         });
       return;
     }
@@ -66,22 +72,24 @@ class Section extends React.Component {
       index,
     })
     .then(({ disclose }) => {
-      disclose({
-        preferredType: 'panel',
-        size: 'small',
-        content: {
-          key: 'DisclosedContent-Demo',
-          name: disclosedContentDisclosureKey,
-          props: {
-            key: name + index,
-            id: name,
-            name: `Disclosure from ${name} - Row ${index}`,
+      if (disclose) {
+        disclose({
+          preferredType: 'panel',
+          size: 'small',
+          content: {
+            key: 'DisclosedContent-Demo',
+            name: disclosedContentDisclosureKey,
+            props: {
+              key: name + index,
+              id: name,
+              name: `Disclosure from ${name} - Row ${index}`,
+            },
           },
-        },
-      });
+        });
+      }
     })
     .catch((error) => {
-      console.log(`selection denied ${error}`);
+      console.log(`Section - Selection denied - ${error}`);
     });
   }
 
@@ -92,20 +100,22 @@ class Section extends React.Component {
 
     aggregatorDelegate.requestFocus()
       .then(({ disclose }) => {
-        disclose({
-          preferredType: 'modal',
-          size: 'small',
-          content: {
-            key,
-            name: modalAggregatorDisclosureKey,
-            props: {
-              identifier: key,
+        if (disclose) {
+          disclose({
+            preferredType: 'modal',
+            size: 'small',
+            content: {
+              key,
+              name: modalAggregatorDisclosureKey,
+              props: {
+                identifier: key,
+              },
             },
-          },
-        });
+          });
+        }
       })
       .catch((error) => {
-        console.log(`selection denied ${error}`);
+        console.log(`Section - Selection denied - ${error}`);
       });
   }
 
@@ -124,9 +134,9 @@ class Section extends React.Component {
         header={(
           <Header
             title={name} startContent={(
-              <div>
-                {!isLocked ? <Button text="Lock" onClick={this.lock} /> : <Button text="Unlock" onClick={this.unlock} />}
-                <Button text="Modal" onClick={this.launchModal} />
+              <div style={{ marginRight: '10px' }}>
+                {aggregatorDelegate.hasFocus ? (!isLocked ? <Button text="Lock" onClick={this.lock} /> : <Button text="Unlock" onClick={this.unlock} />) : null}
+                {/* <Button text="Modal" onClick={this.launchModal} /> */}
               </div>
           )}
           />
@@ -158,6 +168,6 @@ class Section extends React.Component {
   }
 }
 
-export default Section;
+PanelSection.propTypes = propTypes;
 
-// export { reducers };
+export default PanelSection;

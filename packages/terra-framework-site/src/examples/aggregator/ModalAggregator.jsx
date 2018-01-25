@@ -5,7 +5,7 @@ import ContentContainer from 'terra-content-container';
 import ActionHeader from 'terra-clinical-action-header';
 import Aggregator from 'terra-aggregator';
 
-import Section from './ExampleSection';
+import PanelSection from './PanelSection';
 
 class ModalAggregator extends React.Component {
   constructor(props) {
@@ -18,9 +18,9 @@ class ModalAggregator extends React.Component {
 
   render() {
     const sections = [
-      <Section key="1" name="1" sectionKey="1" />,
-      <Section key="2" name="2" sectionKey="2" />,
-      <Section key="3" name="3" sectionKey="3" />,
+      <PanelSection key="1" name="1" aggregatorKey="1" />,
+      <PanelSection key="2" name="2" aggregatorKey="2" />,
+      <PanelSection key="3" name="3" aggregatorKey="3" />,
     ];
 
     const body = (
@@ -35,7 +35,6 @@ class ModalAggregator extends React.Component {
         </div>
       </ContentContainer>
     );
-
 
     return body;
   }

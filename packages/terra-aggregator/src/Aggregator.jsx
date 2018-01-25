@@ -98,7 +98,7 @@ class Aggregator extends React.Component {
      * if new children are provided.
      */
     React.Children.forEach(children, (child) => {
-      const childId = child.props.sectionKey ? child.props.sectionKey : `aggregator-section-${Date.now()}`;
+      const childId = child.props.aggregatorKey ? child.props.aggregatorKey : `aggregator-section-${Date.now()}`;
 
       newMap.set(child, {
         id: childId,

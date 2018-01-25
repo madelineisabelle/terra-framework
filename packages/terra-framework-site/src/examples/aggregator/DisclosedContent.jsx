@@ -1,9 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Button from 'terra-button';
 import ContentContainer from 'terra-content-container';
 import TextField from 'terra-form/lib/TextField';
 import AppDelegate from 'terra-app-delegate';
 import ActionHeader from 'terra-clinical-action-header';
+
+const propTypes = {
+  app: AppDelegate.propType,
+  name: PropTypes.string,
+};
 
 class DisclosedContent extends React.Component {
   constructor(props) {
@@ -96,6 +102,8 @@ class DisclosedContent extends React.Component {
     );
   }
 }
+
+DisclosedContent.propTypes = propTypes;
 
 export default DisclosedContent;
 
