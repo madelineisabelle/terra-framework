@@ -23,10 +23,10 @@ class FocusSection extends React.Component {
   }
 
   componentDidMount() {
-    const { aggregatorDelegate } = this.props;
+    const { registerDismissCheck } = this.props;
 
-    if (aggregatorDelegate && aggregatorDelegate.registerLock) {
-      aggregatorDelegate.registerLock(this.checkLockState);
+    if (registerDismissCheck && registerDismissCheck.registerLock) {
+      registerDismissCheck(this.checkLockState);
     }
   }
 
@@ -52,7 +52,7 @@ class FocusSection extends React.Component {
   }
 
   render() {
-    const { name, aggregatorDelegate, ...customProps } = this.props;
+    const { name, aggregatorKey, disclosureType, aggregatorDelegate, requestDisclosureFocus, releaseDisclosureFocus, registerDismissCheck, ...customProps } = this.props;
     const { isLocked } = this.state;
 
     return (

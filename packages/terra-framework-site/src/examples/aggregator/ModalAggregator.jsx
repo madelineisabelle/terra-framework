@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import AppDelegate from 'terra-app-delegate';
 import ContentContainer from 'terra-content-container';
 import ActionHeader from 'terra-clinical-action-header';
-import Aggregator from 'terra-aggregator';
 
+import AggregatorContainer from './AggregatorContainer';
 import DisclosureSection from './DisclosureSection';
 
 class ModalAggregator extends React.Component {
@@ -28,11 +28,9 @@ class ModalAggregator extends React.Component {
         fill
         header={<ActionHeader onClose={this.props.app.closeDisclosure} onBack={this.props.app.goBack} />}
       >
-        <div style={{ height: '100%' }}>
-          <Aggregator key="modalAggregator" app={this.props.app}>
-            { this.state.flip ? sections.reverse() : sections}
-          </Aggregator>
-        </div>
+        <AggregatorContainer app={this.props.app}>
+          { this.state.flip ? sections.reverse() : sections}
+        </AggregatorContainer>
       </ContentContainer>
     );
 

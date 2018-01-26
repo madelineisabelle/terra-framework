@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import AppDelegate from 'terra-app-delegate';
 
 const propTypes = {
-  app: AppDelegate.propType,
   children: PropTypes.node,
   render: PropTypes.func,
+  disclose: PropTypes.func,
 };
 
 class Aggregator extends React.Component {
@@ -16,12 +15,8 @@ class Aggregator extends React.Component {
     this.releaseFocus = this.releaseFocus.bind(this);
     this.setFocusState = this.setFocusState.bind(this);
     this.resetFocusState = this.resetFocusState.bind(this);
-    this.checkAggregatorLocks = this.checkAggregatorLocks.bind(this);
     this.generateChildMap = this.generateChildMap.bind(this);
     this.renderChildren = this.renderChildren.bind(this);
-
-    // We don't need to keep these in state; doing so may trigger unnecessary renders.
-    this.lockMap = {};
 
     this.state = {
       childMap: this.generateChildMap(this.props.children),
@@ -39,16 +34,9 @@ class Aggregator extends React.Component {
      */
     if (nextProps.children !== this.props.children) {
       let focusItemIdIsPresent;
-      const newLockMap = {};
       const newChildMap = this.generateChildMap(nextProps.children);
 
       newChildMap.forEach((value) => {
-        // We need to copy along current locks and remove those of missing children.
-        const existingLock = this.lockMap[value.id];
-        if (existingLock) {
-          newLockMap[value.id] = existingLock;
-        }
-
         /**
          * We check to see if the current section with focus is present within the new props.
          * If present, the existing state and disclosure are persisted.
@@ -58,10 +46,8 @@ class Aggregator extends React.Component {
         }
       });
 
-      this.lockMap = newLockMap;
-
       if (!focusItemIdIsPresent) {
-        this.releaseFocus();
+        this.releaseFocus(undefined, true);
       }
 
       this.setState({
@@ -81,14 +67,7 @@ class Aggregator extends React.Component {
     this.setFocusState();
   }
 
-  checkAggregatorLocks() {
-    const itemLockPromise = this.lockMap[this.state.focusItemId];
-
-    return Promise.all([itemLockPromise && itemLockPromise()]);
-  }
-
   generateChildMap(children) {
-    const { app } = this.props;
     const newMap = new Map();
 
     /**
@@ -103,16 +82,7 @@ class Aggregator extends React.Component {
       newMap.set(child, {
         id: childId,
         requestFocusInstance: state => this.requestFocus(childId, state),
-        releaseFocusInstance: () => this.releaseFocus(),
-        registerLockInstance: (lock) => {
-          // The lock is registered locally so the Aggregator has access to it for focus requests.
-          this.lockMap[childId] = lock;
-
-          // The lock is also passed through to the app delegate implementation for direct manager integration.
-          if (app && app.registerLock) {
-            app.registerLock(lock);
-          }
-        },
+        releaseFocusInstance: () => this.releaseFocus(childId),
       });
     });
 
@@ -120,16 +90,17 @@ class Aggregator extends React.Component {
   }
 
   requestFocus(sectionId, selectionData) {
-    const { app } = this.props;
+    const { disclose } = this.props;
+    const { focusItemId } = this.state;
 
-    return this.checkAggregatorLocks()
+    return Promise.resolve()
       .then(() =>
         /**
          * Focus is released on the currently focused item to ensure a clean start for the next component receiving focus.
          * The releaseFocus's Promise is returned and inserted into the Promise chain to prevent disclosures from occurring
          * if the focus release fails.
          */
-        this.releaseFocus()
+        this.releaseFocus(focusItemId)
           .then(() => {
             this.setFocusState(sectionId, Object.freeze(selectionData || {}));
           }),
@@ -141,8 +112,8 @@ class Aggregator extends React.Component {
          * If the Aggregator is provided with disclosure functionality, the focus request is resolved with a custom
          * disclose implementation.
          */
-        if (app && app.disclose) {
-          focusRequestPayload.disclose = data => app.disclose(data)
+        if (disclose) {
+          focusRequestPayload.disclose = data => disclose(data)
             .then(({ onDismiss, forceDismiss }) => {
               /**
                * The disclosure's forceDismiss instance is cached so it can be called later. If an Aggregator item is
@@ -175,13 +146,21 @@ class Aggregator extends React.Component {
       });
   }
 
-  releaseFocus() {
+  releaseFocus(itemId, force) {
     // If nothing is currently in focus, we can resolve immediately.
     if (!this.state.focusItemId) {
       return Promise.resolve();
     }
 
-    return this.checkAggregatorLocks()
+    /**
+     * If the provided item ID is not the currently focused ID, and the release is not forced,
+     * the release is rejected to protect against delayed calls.
+     */
+    if (itemId !== this.state.focusItemId && !force) {
+      return Promise.reject();
+    }
+
+    return Promise.resolve()
       .then(() => {
         /**
          * If forceDismissInstance is present, a disclosure must have been opened by the currently focused
@@ -223,8 +202,6 @@ class Aggregator extends React.Component {
        *                resolved if the release request was successful. If the release request was unsuccessful, the
        *                Promise will be rejected. This function is only provided to components that are focused.
        * state - An Object containing the state given to the Aggregator during the focus request.
-       * registerLock - A function used to register a Promise-returning function to the Aggregator that will be used to validate
-       *                focus releases.
        */
       return React.cloneElement(child, {
         aggregatorDelegate: {
@@ -232,7 +209,6 @@ class Aggregator extends React.Component {
           requestFocus: childData.requestFocusInstance,
           releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
           state: childIsActive ? focusItemState : undefined,
-          registerLock: childData.registerLockInstance,
         },
       });
     });

@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Aggregator from 'terra-aggregator';
 import Grid from 'terra-grid';
+
 import DisclosureSection from './DisclosureSection';
 
 const propTypes = {

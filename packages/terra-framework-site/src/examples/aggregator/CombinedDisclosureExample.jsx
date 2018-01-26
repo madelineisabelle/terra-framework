@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Aggregator from 'terra-aggregator';
 import NewModalManager from 'terra-aggregator/lib/NewModalManager';
 import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
 
+import AggregatorContainer from './AggregatorContainer';
 import DisclosureSection from './DisclosureSection';
 import FocusSection from './FocusSection';
 
@@ -35,9 +35,9 @@ class CombinedDisclosureExample extends React.Component {
         {
           <NewModalManager>
             <SlidePanelManager>
-              <Aggregator>
+              <AggregatorContainer>
                 {this.state.flip ? Object.assign([], sections).reverse() : sections }
-              </Aggregator>
+              </AggregatorContainer>
             </SlidePanelManager>
           </NewModalManager>
         }

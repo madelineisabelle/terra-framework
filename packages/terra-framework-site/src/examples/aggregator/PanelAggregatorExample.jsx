@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Aggregator from 'terra-aggregator';
 import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
 
+import AggregatorContainer from './AggregatorContainer';
 import DisclosureSection from './DisclosureSection';
 
 const propTypes = {
@@ -24,25 +25,17 @@ class SimpleAggregatorExample extends React.Component {
     };
   }
 
-  // render={children => (
-  //   <div style={{ height: '100%', padding: '15px' }}>
-  //     {children.map((child, index) => React.cloneElement(child, { style: { marginTop: index !== 0 ? '15px' : '0px', border: '1px solid lightgrey' } }))}
-  //   </div>
-  //   )}
-
   render() {
     const body = (
       <div>
         <h3>Aggregator within SlidePanelManager</h3>
         <button onClick={() => { this.setState({ flip: !this.state.flip }); }}>Flip Section Order</button>
         <button onClick={() => { this.forceUpdate(); }}>Force Aggregator Render</button>
-        {
-          <SlidePanelManager>
-            <Aggregator>
-              {this.state.flip ? Object.assign([], sections).reverse() : sections }
-            </Aggregator>
-          </SlidePanelManager>
-        }
+        <SlidePanelManager>
+          <AggregatorContainer>
+            {this.state.flip ? Object.assign([], sections).reverse() : sections }
+          </AggregatorContainer>
+        </SlidePanelManager>
       </div>
     );
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Aggregator from 'terra-aggregator';
 import NewModalManager from 'terra-aggregator/lib/NewModalManager';
 
+import AggregatorContainer from './AggregatorContainer';
 import DisclosureSection from './DisclosureSection';
 
 const propTypes = {
@@ -24,25 +24,17 @@ class ModalAggregtorExample extends React.Component {
     };
   }
 
-  // render={children => (
-  //   <div style={{ height: '100%', padding: '15px' }}>
-  //     {children.map((child, index) => React.cloneElement(child, { style: { marginTop: index !== 0 ? '15px' : '0px', border: '1px solid lightgrey' } }))}
-  //   </div>
-  //   )}
-
   render() {
     const body = (
       <div>
         <h3>Aggregator within ModalManager</h3>
         <button onClick={() => { this.setState({ flip: !this.state.flip }); }}>Flip Section Order</button>
         <button onClick={() => { this.forceUpdate(); }}>Force Aggregator Render</button>
-        {
-          <NewModalManager>
-            <Aggregator>
-              {this.state.flip ? Object.assign([], sections).reverse() : sections }
-            </Aggregator>
-          </NewModalManager>
-        }
+        <NewModalManager>
+          <AggregatorContainer>
+            {this.state.flip ? Object.assign([], sections).reverse() : sections }
+          </AggregatorContainer>
+        </NewModalManager>
       </div>
     );
 

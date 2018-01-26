@@ -6,6 +6,7 @@ import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
 import AppDelegate from 'terra-app-delegate';
 import ActionHeader from 'terra-clinical-action-header';
+import DatePicker from 'terra-date-picker';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
 
@@ -31,6 +32,11 @@ const propTypes = {
   aggregatorDelegate: PropTypes.object,
   name: PropTypes.string,
   disclosureType: PropTypes.string,
+
+  disclose: PropTypes.func,
+  registerDismissCheck: PropTypes.func,
+  requestDisclosureFocus: PropTypes.func,
+  releaseDisclosureFocus: PropTypes.func,
 };
 
 class DisclosureSection extends React.Component {
@@ -38,43 +44,7 @@ class DisclosureSection extends React.Component {
     super(props);
 
     this.handleSelection = this.handleSelection.bind(this);
-    this.checkLockState = this.checkLockState.bind(this);
-    this.lock = this.lock.bind(this);
-    this.unlock = this.unlock.bind(this);
     this.launchModal = this.launchModal.bind(this);
-
-    this.state = {
-      isLocked: false,
-    };
-  }
-
-  componentDidMount() {
-    const { aggregatorDelegate } = this.props;
-
-    if (aggregatorDelegate && aggregatorDelegate.registerLock) {
-      aggregatorDelegate.registerLock(this.checkLockState);
-    }
-  }
-
-  checkLockState() {
-    if (this.state.isLocked) {
-      alert(`${this.props.name} is locked, so the focus request was denied.`);
-      return Promise.reject();
-    }
-
-    return Promise.resolve();
-  }
-
-  unlock() {
-    this.setState({
-      isLocked: false,
-    });
-  }
-
-  lock() {
-    this.setState({
-      isLocked: true,
-    });
   }
 
   handleSelection(event, index) {
@@ -114,11 +84,11 @@ class DisclosureSection extends React.Component {
   }
 
   launchModal() {
-    const { app } = this.props;
+    const { disclose } = this.props;
 
     const key = `ModalContent-${Date.now()}`;
 
-    app.disclose({
+    disclose({
       preferredType: 'modal',
       size: 'small',
       content: {
@@ -129,8 +99,7 @@ class DisclosureSection extends React.Component {
   }
 
   render() {
-    const { app, name, aggregatorDelegate, ...customProps } = this.props;
-    const { isLocked } = this.state;
+    const { name, disclosureType, disclose, aggregatorKey, aggregatorDelegate, requestDisclosureFocus, releaseDisclosureFocus, registerDismissCheck, ...customProps } = this.props;
 
     let selectedIndex;
     if (aggregatorDelegate.hasFocus && aggregatorDelegate.state && aggregatorDelegate.state.index !== undefined) {
@@ -144,8 +113,8 @@ class DisclosureSection extends React.Component {
           <Header
             title={name} startContent={(
               <div style={{ marginRight: '10px' }}>
-                {!isLocked ? <Button text="Lock" onClick={this.lock} isDisabled={!aggregatorDelegate.hasFocus} /> : <Button text="Unlock" onClick={this.unlock} />}
-                {app ? <Button text="Launch Modal" onClick={this.launchModal} /> : null}
+                {disclose ? <Button text="Launch Modal" onClick={this.launchModal} /> : null}
+                <DatePicker name="header-date-picker" releaseFocus={releaseDisclosureFocus} requestFocus={requestDisclosureFocus} />
               </div>
           )}
           />

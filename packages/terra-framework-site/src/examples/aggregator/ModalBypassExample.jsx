@@ -4,6 +4,8 @@ import Aggregator from 'terra-aggregator';
 
 import NewModalManager from 'terra-aggregator/lib/NewModalManager';
 import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
+
+import AggregatorContainer from './AggregatorContainer';
 import DisclosureSection from './DisclosureSection';
 
 const propTypes = {
@@ -18,14 +20,19 @@ const sections = Object.freeze([
 
 const ModalManagerBypass = ({ app, flip }) => {
   const updatedSections = sections.map(section => (
-    React.cloneElement(section, { app })
+    React.cloneElement(section, {
+      disclose: app.disclose,
+      requestDisclosureFocus: app.requestFocus,
+      releaseDisclosureFocus: app.releaseFocus,
+      registerDismissCheck: app.registerLock,
+    })
   ));
 
   return (
     <SlidePanelManager app={app}>
-      <Aggregator>
+      <AggregatorContainer>
         {flip ? Object.assign([], updatedSections).reverse() : updatedSections }
-      </Aggregator>
+      </AggregatorContainer>
     </SlidePanelManager>
   );
 };
