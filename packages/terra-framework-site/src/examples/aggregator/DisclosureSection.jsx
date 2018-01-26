@@ -4,9 +4,28 @@ import Button from 'terra-button';
 import SelectableList from 'terra-list/lib/SelectableList';
 import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
+import AppDelegate from 'terra-app-delegate';
+import ActionHeader from 'terra-clinical-action-header';
 
 import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
-import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator';
+
+const ReadonlyModal = ({ app }) => (
+  <ContentContainer
+    header={(
+      <ActionHeader
+        title="Info Modal"
+        onClose={app.closeDisclosure}
+        onBack={app.goBack}
+      />
+    )}
+  >
+    <div style={{ padding: '15px' }}>
+      <p>This modal is not presented through the Aggregator. If the SlidePanel was open, it should still be open</p>
+    </div>
+  </ContentContainer>
+);
+
+AppDelegate.registerComponentForDisclosure('ReadonlyModal', ReadonlyModal);
 
 const propTypes = {
   aggregatorDelegate: PropTypes.object,
@@ -22,6 +41,7 @@ class DisclosureSection extends React.Component {
     this.checkLockState = this.checkLockState.bind(this);
     this.lock = this.lock.bind(this);
     this.unlock = this.unlock.bind(this);
+    this.launchModal = this.launchModal.bind(this);
 
     this.state = {
       isLocked: false,
@@ -93,8 +113,23 @@ class DisclosureSection extends React.Component {
     });
   }
 
+  launchModal() {
+    const { app } = this.props;
+
+    const key = `ModalContent-${Date.now()}`;
+
+    app.disclose({
+      preferredType: 'modal',
+      size: 'small',
+      content: {
+        key,
+        name: 'ReadonlyModal',
+      },
+    });
+  }
+
   render() {
-    const { name, aggregatorDelegate, ...customProps } = this.props;
+    const { app, name, aggregatorDelegate, ...customProps } = this.props;
     const { isLocked } = this.state;
 
     let selectedIndex;
@@ -110,6 +145,7 @@ class DisclosureSection extends React.Component {
             title={name} startContent={(
               <div style={{ marginRight: '10px' }}>
                 {!isLocked ? <Button text="Lock" onClick={this.lock} isDisabled={!aggregatorDelegate.hasFocus} /> : <Button text="Unlock" onClick={this.unlock} />}
+                {app ? <Button text="Launch Modal" onClick={this.launchModal} /> : null}
               </div>
           )}
           />

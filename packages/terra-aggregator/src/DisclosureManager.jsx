@@ -137,7 +137,7 @@ class DisclosureManager extends React.Component {
                   this.dismissMap[data.content.key] = resolve;
                 }),
                 forceDismiss: () => {
-                  const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+                  const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key] && this.disclosureLocks[key]());
                   if (locksForDisclosures.length) {
                     return Promise.all(locksForDisclosures)
                       .then(() => {
@@ -182,7 +182,7 @@ class DisclosureManager extends React.Component {
   }
 
   safelyCloseDisclosure() {
-    const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+    const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key] && this.disclosureLocks[key]());
     if (locksForDisclosures.length) {
       return Promise.all(locksForDisclosures)
         .then(() => {
@@ -258,7 +258,7 @@ class DisclosureManager extends React.Component {
             });
           } :
           () => {
-            const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+            const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key] && this.disclosureLocks[key]());
             if (locksForDisclosures.length) {
               return Promise.all(locksForDisclosures)
                 .then(() => {
@@ -285,7 +285,7 @@ class DisclosureManager extends React.Component {
           }
         ),
         closeDisclosure: () => {
-          const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key]());
+          const locksForDisclosures = this.state.disclosureComponentKeys.map(key => this.disclosureLocks[key] && this.disclosureLocks[key]());
           if (locksForDisclosures.length) {
             return Promise.all(locksForDisclosures)
               .then(() => {

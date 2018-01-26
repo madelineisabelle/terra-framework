@@ -26,12 +26,6 @@ class CombinedDisclosureExample extends React.Component {
     };
   }
 
-  // render={children => (
-  //   <div style={{ height: '100%', padding: '15px' }}>
-  //     {children.map((child, index) => React.cloneElement(child, { style: { marginTop: index !== 0 ? '15px' : '0px', border: '1px solid lightgrey' } }))}
-  //   </div>
-  //   )}
-
   render() {
     const body = (
       <div>

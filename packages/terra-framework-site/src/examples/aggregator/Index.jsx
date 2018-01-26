@@ -16,6 +16,7 @@ import PanelAggregatorExample from './PanelAggregatorExample';
 import ModalAggregtorExample from './ModalAggregtorExample';
 import AggregatorInModalExample from './AggregatorInModalExample';
 import CombinedDisclosureExample from './CombinedDisclosureExample';
+import ModalBypassExample from './ModalBypassExample';
 
 const NavigationExamples = () => (
   <div>
@@ -33,6 +34,9 @@ const NavigationExamples = () => (
     <br />
     <br />
     <CombinedDisclosureExample />
+    <br />
+    <br />
+    <ModalBypassExample />
     <br />
     <br />
     <AggregatorInModalExample />
