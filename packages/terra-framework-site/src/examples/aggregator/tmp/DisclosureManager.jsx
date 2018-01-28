@@ -15,6 +15,14 @@ const defaultProps = {
 };
 
 class DisclosureManager extends React.Component {
+  static cloneDisclosureState(state) {
+    const newState = Object.assign({}, state);
+    newState.disclosureComponentKeys = Object.assign([], newState.disclosureComponentKeys);
+    newState.disclosureComponentData = Object.assign({}, newState.disclosureComponentData);
+
+    return newState;
+  }
+
   constructor(props) {
     super(props);
 
@@ -57,14 +65,6 @@ class DisclosureManager extends React.Component {
     return lockPromises;
   }
 
-  cloneDisclosureState(state) {
-    const newState = Object.assign({}, state);
-    newState.disclosureComponentKeys = Object.assign([], newState.disclosureComponentKeys);
-    newState.disclosureComponentData = Object.assign({}, newState.disclosureComponentData);
-
-    return newState;
-  }
-
   openDisclosure(data) {
     this.setState({
       disclosureIsOpen: true,
@@ -81,7 +81,7 @@ class DisclosureManager extends React.Component {
   }
 
   pushDisclosure(data) {
-    const newState = this.cloneDisclosureState(this.state);
+    const newState = DisclosureManager.cloneDisclosureState(this.state);
 
     newState.disclosureComponentKeys.push(data.content.key);
     newState.disclosureComponentData[data.content.key] = {
@@ -94,7 +94,7 @@ class DisclosureManager extends React.Component {
   }
 
   popDisclosure() {
-    const newState = this.cloneDisclosureState(this.state);
+    const newState = DisclosureManager.cloneDisclosureState(this.state);
 
     newState.disclosureComponentData[newState.disclosureComponentKeys.pop()] = undefined;
 

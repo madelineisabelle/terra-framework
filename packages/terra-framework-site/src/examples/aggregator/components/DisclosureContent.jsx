@@ -30,7 +30,7 @@ class DisclosureContent extends React.Component {
 
   checkLockState() {
     if (this.state.text && this.state.text.length) {
-      if (!confirm(`${this.props.name} has unsaved changes. Do you wish to continue?`)) {
+      if (!confirm(`${this.props.name} has unsaved changes that will be lost. Do you wish to continue?`)) { // eslint-disable-line no-alert
         return Promise.reject();
       }
     }
@@ -51,22 +51,19 @@ class DisclosureContent extends React.Component {
           />
         )}
       >
-        <div style={{ padding: '10px' }}>
+        <div style={{ padding: '.7rem' }}>
           <h3>{name}</h3>
           <Button
             text="Dismiss"
             onClick={() => {
               app.dismiss()
-                .then(() => {
-                  console.log('Close succeeded');
-                })
                 .catch(() => {
-                  console.log('Closed failed');
+                  console.log('Dismiss failed. A lock must be in place.'); // eslint-disable-line no-console
                 });
             }}
           />
           <Button
-            text="Disclose"
+            text="Disclose Again"
             onClick={() => {
               app.disclose({
                 preferredType: 'panel',
@@ -79,16 +76,11 @@ class DisclosureContent extends React.Component {
                     name: `Nested ${this.props.name}`,
                   },
                 },
-              })
-                .then(() => {
-                  console.log('disclose succeeded');
-                })
-                .catch(() => {
-                  console.log('disclose failed');
-                });
+              });
             }}
           />
-          {this.state.text && this.state.text.length ? <p>Dirty!</p> : <p>Not dirty!</p>}
+          <br />
+          <br />
           <TextField
             value={this.state.text || ''}
             onChange={(event) => {
@@ -97,6 +89,7 @@ class DisclosureContent extends React.Component {
               });
             }}
           />
+          {this.state.text && this.state.text.length ? <p>Component has unsaved changes!</p> : null}
         </div>
       </ContentContainer>
     );

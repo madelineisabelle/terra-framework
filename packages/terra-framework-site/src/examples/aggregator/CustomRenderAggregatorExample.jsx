@@ -28,22 +28,22 @@ const CustomRenderAggregatorExample = () => (
     <h3>Aggregator with custom render</h3>
     <Aggregator
       items={items}
-      render={updatedItems => (
+      render={renderData => (
         <Grid>
           <Grid.Row>
             <Grid.Column col={6}>
-              {updatedItems[0]}
+              {renderData.items[0]}
             </Grid.Column>
             <Grid.Column col={6}>
-              {updatedItems[1]}
+              {renderData.items[1]}
             </Grid.Column>
           </Grid.Row>
           <Grid.Row>
             <Grid.Column col={6}>
-              {updatedItems[2]}
+              {renderData.items[2]}
             </Grid.Column>
             <Grid.Column col={6}>
-              {updatedItems[3]}
+              {renderData.items[3]}
             </Grid.Column>
           </Grid.Row>
         </Grid>

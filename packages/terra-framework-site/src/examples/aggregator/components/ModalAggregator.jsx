@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import AppDelegate from 'terra-app-delegate';
 import ContentContainer from 'terra-content-container';
 import ActionHeader from 'terra-clinical-action-header';
@@ -30,6 +29,10 @@ const ModalAggregator = ({ app }) => (
     />
   </ContentContainer>
 );
+
+ModalAggregator.propTypes = {
+  app: AppDelegate.propType,
+};
 
 export default ModalAggregator;
 

@@ -24,7 +24,7 @@ const items = Object.freeze([{
 
 const CombinedDisclosureExample = () => (
   <div>
-    <h3>Aggregator with multiple parent managers</h3>
+    <h3>Aggregator with disclosure</h3>
     <NewModalManager>
       <SlidePanelManager>
         <AggregatorContainer

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import AppDelegate from 'terra-app-delegate';
 
 import NewModalManager from './tmp/NewModalManager';
 import SlidePanelManager from './tmp/SlidePanelManager';
@@ -38,10 +39,18 @@ const ModalManagerBypass = ({ app }) => {
   );
 };
 
+ModalManagerBypass.propTypes = {
+  app: AppDelegate.propType,
+};
+
 const ModalBypassExample = () => (
   <div>
-    <h3>Aggregator with ModalManager jumper</h3>
-    <h4>Launching the modal from the header should not impact Aggregator state</h4>
+    <h3>Aggregator with disclosure bypass</h3>
+    <p>
+      In this example, the Aggregator items are provided with the ModalManager disclosure function directly.
+      Calling that function does not require Aggregator focus and will bypass the Aggregator entirely. This can be
+      useful for simple Modal workflows that should not impact Aggregator state.
+    </p>
     <NewModalManager>
       <ModalManagerBypass />
     </NewModalManager>

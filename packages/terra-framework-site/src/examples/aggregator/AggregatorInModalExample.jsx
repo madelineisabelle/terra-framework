@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import AppDelegate from 'terra-app-delegate';
 import NewModalManager from './tmp/NewModalManager';
 
 import { disclosureKey as modalAggregatorDisclosureKey } from './components/ModalAggregator';
@@ -27,6 +28,10 @@ const ModalButton = ({ app }) => (
     Launch Modal
   </button>
 );
+
+ModalButton.propTypes = {
+  app: AppDelegate.propType,
+};
 
 class SimpleAggregatorExample extends React.Component {
   constructor(props) {

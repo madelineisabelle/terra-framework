@@ -12,9 +12,36 @@
 import React from 'react';
 import Aggregator from 'terra-aggregator';
 
-<Aggregator>
-  ...
-</Aggregator>
+const aggregatorItems = [{
+  key: 'itemA',
+  component: <ItemA />,
+}, {
+  key: 'itemB',
+  component: <ItemB />,
+}, {
+  key: 'itemC',
+  component: <ItemC />,
+}]
+
+// Using the default render
+<Aggregator
+  items={aggregatorItems}
+/>
+
+// Using custom render
+<Aggregator
+  items={aggregatorItems}
+  render={({ items }) => {
+    // ...
+  }}
+/>
+
+// With disclosure
+<Aggregator
+  items={aggregatorItems}
+  disclose={myDiscloseImplementation} // From ModalManager/SlidePanelManager/etc.
+/>
+
 ```
 
 ## Component Features

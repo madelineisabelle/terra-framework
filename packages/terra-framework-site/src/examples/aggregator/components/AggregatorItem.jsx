@@ -20,10 +20,14 @@ const ReadonlyModal = ({ app }) => (
     )}
   >
     <div style={{ padding: '15px' }}>
-      <p>This modal was not presented through the Aggregator. Focus will be maintained.</p>
+      <p>This modal was not presented through the Aggregator. The Aggregator state was maintained.</p>
     </div>
   </ContentContainer>
 );
+
+ReadonlyModal.propTypes = {
+  app: AppDelegate.propType,
+};
 
 AppDelegate.registerComponentForDisclosure('ReadonlyModal', ReadonlyModal);
 
@@ -52,7 +56,7 @@ class AggregatorItem extends React.Component {
     if (aggregatorDelegate.hasFocus && aggregatorDelegate.itemState.index === index) {
       aggregatorDelegate.releaseFocus()
         .catch(() => {
-          console.log('Section - Focus release failed. Something must be locked.');
+          console.log('Section - Focus release failed. Something must be locked.'); // eslint-disable-line no-console
         });
       return;
     }
@@ -78,7 +82,7 @@ class AggregatorItem extends React.Component {
       }
     })
     .catch((error) => {
-      console.log(`Section - Selection denied - ${error}`);
+      console.log(`Section - Selection denied - ${error}`); // eslint-disable-line no-console
     });
   }
 
@@ -111,7 +115,7 @@ class AggregatorItem extends React.Component {
         header={(
           <Header
             title={name} startContent={(
-              <div style={{ marginRight: '10px' }}>
+              <div style={{ marginRight: '.7rem' }}>
                 {disclose ? <Button text="Modal (Without Requesting Focus)" onClick={this.launchModal} /> : null}
               </div>
           )}
@@ -125,17 +129,17 @@ class AggregatorItem extends React.Component {
         >
           <SelectableList.Item
             content={
-              <div style={{ padding: '10px' }}>Row 0</div>
+              <div style={{ padding: '.7rem' }}>Row 0</div>
             }
           />
           <SelectableList.Item
             content={
-              <div style={{ padding: '10px' }}>Row 1</div>
+              <div style={{ padding: '.7rem' }}>Row 1</div>
             }
           />
           <SelectableList.Item
             content={
-              <div style={{ padding: '10px' }}>Row 2</div>
+              <div style={{ padding: '.7rem' }}>Row 2</div>
             }
           />
         </SelectableList>

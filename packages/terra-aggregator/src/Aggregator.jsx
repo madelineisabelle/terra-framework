@@ -2,12 +2,29 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const propTypes = {
+  /**
+   * The components that will be managed by the Aggregator. Each component provided will be provided with an 'aggregatorDelegate' prop
+   * containing the Aggregator API. Keys must also be provided to allow the Aggregator to uniquely identify the component.
+   * Immutable objects are encouraged.
+   */
   items: PropTypes.arrayOf(PropTypes.shape({
     key: PropTypes.string,
     component: PropTypes.element,
   })),
+  /**
+   * A function that will override the Aggregators default render. The function will receive an Object parameter containing:
+   *   items - An Array of Aggregator items to be rendered.
+   */
   render: PropTypes.func,
+  /**
+   * A function that will be provided to Aggregator items that have received focus. The function must adhere to the standardized
+   * AppDelegate disclosure API.
+   */
   disclose: PropTypes.func,
+};
+
+const defaultProps = {
+  items: [],
 };
 
 class Aggregator extends React.Component {
@@ -168,7 +185,8 @@ class Aggregator extends React.Component {
        * releaseFocus - A function that will attempt to release the focus held by the calling child. Returns a promse that is
        *                resolved if the release request was successful. If the release request was unsuccessful, the
        *                Promise will be rejected. This function is only provided to components that are focused.
-       * itemState - An Object containing the state given to the Aggregator during the focus request.
+       * itemState     - An Object containing the state given to the Aggregator during the focus request.
+       * aggregatorKey - The key provided to the Aggregator to identify the item.
        */
       return React.cloneElement(item.component, {
         aggregatorDelegate: {
@@ -176,6 +194,7 @@ class Aggregator extends React.Component {
           requestFocus: state => this.requestFocus(item.key, state),
           releaseFocus: childIsActive ? () => (this.releaseFocus(item.key)) : undefined,
           itemState: childIsActive ? focusedItemState : undefined,
+          aggregatorKey: item.key,
         },
       });
     });
@@ -185,7 +204,7 @@ class Aggregator extends React.Component {
     const renderedItems = this.renderItems();
 
     if (this.props.render) {
-      return this.props.render(renderedItems);
+      return this.props.render({ items: renderedItems });
     }
 
     return (
@@ -197,5 +216,6 @@ class Aggregator extends React.Component {
 }
 
 Aggregator.propTypes = propTypes;
+Aggregator.defaultProps = defaultProps;
 
 export default Aggregator;
