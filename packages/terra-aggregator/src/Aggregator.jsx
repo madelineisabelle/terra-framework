@@ -12,8 +12,8 @@ const propTypes = {
     component: PropTypes.element,
   })),
   /**
-   * A function that will override the Aggregators default render. The function will receive an Object parameter containing:
-   *   items - An Array of Aggregator items to be rendered.
+   * A function that will override the Aggregators default render. The function will receive an Object parameter data necessary for the
+   * render process.
    */
   render: PropTypes.func,
   /**
@@ -99,31 +99,28 @@ class Aggregator extends React.Component {
          */
         if (disclose) {
           focusRequestPayload.disclose = data => disclose(data)
-            .then(({ onDismiss, forceDismiss }) => {
+            .then(({ onDismiss, forceDismiss, ...other }) => {
               /**
                * The disclosure's forceDismiss instance is cached so it can be called later. If an Aggregator item is
-               * currently presenting a disclosure and releases focus, we will call this forceDismiss instance to force
+               * currently presenting a disclosure and releases focus, we will call this function to force
                * the disclosure to close.
                */
-
               this.forceDismissInstance = forceDismiss;
-              this.onDismissInstance = onDismiss;
 
               /**
-               * A handler is added deferred onDismiss promise chain to remove the cached forceDismiss instance (the disclosure is
-               * closing, so it is no longer relevant). The handler also resets the focus state if the current item in state
-               * matches the item being dismissed.
+               * A handler is added to the deferred onDismiss promise chain to remove the cached forceDismiss instance (the disclosure is
+               * closing, so it is no longer relevant). The handler also resets the focus state if focus is currently held by a component.
                */
-              this.onDismissInstance.then(() => {
+              onDismiss.then(() => {
                 this.forceDismissInstance = undefined;
-                this.onDismissInstance = undefined;
 
                 if (this.state.focusedItemId) {
                   this.resetFocusState();
                 }
               });
 
-              return { onDismiss, forceDismiss };
+              // We return the same API so as not to disrupt the chain.
+              return { onDismiss, forceDismiss, ...other };
             });
         }
 
@@ -186,7 +183,6 @@ class Aggregator extends React.Component {
        *                resolved if the release request was successful. If the release request was unsuccessful, the
        *                Promise will be rejected. This function is only provided to components that are focused.
        * itemState     - An Object containing the state given to the Aggregator during the focus request.
-       * aggregatorKey - The key provided to the Aggregator to identify the item.
        */
       return React.cloneElement(item.component, {
         aggregatorDelegate: {
@@ -194,7 +190,6 @@ class Aggregator extends React.Component {
           requestFocus: state => this.requestFocus(item.key, state),
           releaseFocus: childIsActive ? () => (this.releaseFocus(item.key)) : undefined,
           itemState: childIsActive ? focusedItemState : undefined,
-          aggregatorKey: item.key,
         },
       });
     });

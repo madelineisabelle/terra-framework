@@ -1,6 +1,6 @@
 # Terra Aggregator
 
-The Aggregator component is used to manage interactions between groups of disparate components.
+The Aggregator provides focus-based mechanisms for managing actions across disparate components.
 
 [![NPM version](http://img.shields.io/npm/v/terra-aggregator.svg)](https://www.npmjs.org/package/terra-aggregator)
 [![Build Status](https://travis-ci.org/cerner/terra-framework.svg?branch=master)](https://travis-ci.org/cerner/terra-framework)

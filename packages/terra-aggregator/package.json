@@ -2,7 +2,7 @@
   "name": "terra-aggregator",
   "main": "lib/Aggregator.js",
   "version": "0.0.0",
-  "description": "The Aggregator is a component used to manage interactions between groups of disparate components.",
+  "description": "The Aggregator provides focus-based mechanisms for managing actions across disparate components.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cerner/terra-framework.git"
