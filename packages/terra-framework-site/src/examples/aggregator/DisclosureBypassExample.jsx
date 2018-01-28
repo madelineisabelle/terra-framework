@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import NewModalManager from 'terra-aggregator/lib/NewModalManager';
-import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
+import NewModalManager from './tmp/NewModalManager';
+import SlidePanelManager from './tmp/SlidePanelManager';
 
 import AggregatorContainer from './components/AggregatorContainer';
 import AggregatorItem from './components/AggregatorItem';
@@ -17,12 +17,6 @@ const items = Object.freeze([{
 }, {
   key: 'SECTION_1',
   component: <AggregatorItem key="1" name="Section 1" disclosureType="panel" />,
-}, {
-  key: 'SECTION_2',
-  component: <AggregatorItem key="2" name="Section 2" disclosureType="panel" />,
-}, {
-  key: 'SECTION_3',
-  component: <AggregatorItem key="3" name="Section 3" disclosureType="panel" />,
 }]);
 
 const ModalManagerBypass = ({ app }) => {

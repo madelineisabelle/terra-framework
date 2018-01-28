@@ -11,11 +11,8 @@ import AggregatorSrc from '!raw-loader!terra-aggregator/src/Aggregator.jsx';
 /* eslint-enable import/no-webpack-loader-syntax, import/first, import/no-unresolved, import/extensions */
 
 // Example Files
-// import SimpleAggregatorExample from './SimpleAggregatorExample';\
 import StandaloneAggregatorExample from './StandaloneAggregatorExample';
 import CustomRenderAggregatorExample from './CustomRenderAggregatorExample';
-// import PanelAggregatorExample from './PanelAggregatorExample';
-// import ModalAggregtorExample from './ModalAggregtorExample';
 import AggregatorInModalExample from './AggregatorInModalExample';
 import CombinedDisclosureExample from './CombinedDisclosureExample';
 import DisclosureBypassExample from './DisclosureBypassExample';

@@ -33,7 +33,6 @@ class Aggregator extends React.Component {
     if (nextProps.items !== this.props.items) {
       // If the currently focused item is not present in the new items set,
       // the focus is forcefully released to clean up any presented disclosures.
-
       let focusItemIsPresent;
       items.forEach((item) => {
         if (item.key === focusedItemId) {

@@ -20,7 +20,7 @@ const ReadonlyModal = ({ app }) => (
     )}
   >
     <div style={{ padding: '15px' }}>
-      <p>This modal is not presented through the Aggregator. If the SlidePanel was open, it should still be open</p>
+      <p>This modal was not presented through the Aggregator. Focus will be maintained.</p>
     </div>
   </ContentContainer>
 );
@@ -112,7 +112,7 @@ class AggregatorItem extends React.Component {
           <Header
             title={name} startContent={(
               <div style={{ marginRight: '10px' }}>
-                {disclose ? <Button text="Launch Modal" onClick={this.launchModal} /> : null}
+                {disclose ? <Button text="Modal (Without Requesting Focus)" onClick={this.launchModal} /> : null}
               </div>
           )}
           />

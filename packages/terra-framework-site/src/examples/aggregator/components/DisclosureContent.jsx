@@ -73,7 +73,7 @@ class DisclosureContent extends React.Component {
                 size: 'small',
                 content: {
                   key: `Nested ${this.props.name}`,
-                  name: 'DisclosedContent',
+                  name: 'DisclosureContent',
                   props: {
                     key: `Nested ${this.props.name}`,
                     name: `Nested ${this.props.name}`,

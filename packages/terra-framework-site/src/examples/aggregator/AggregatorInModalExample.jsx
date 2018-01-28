@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import NewModalManager from 'terra-aggregator/lib/NewModalManager';
+import NewModalManager from './tmp/NewModalManager';
 
 import { disclosureKey as modalAggregatorDisclosureKey } from './components/ModalAggregator';
 

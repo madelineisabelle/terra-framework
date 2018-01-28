@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import NewModalManager from 'terra-aggregator/lib/NewModalManager';
-import SlidePanelManager from 'terra-aggregator/lib/SlidePanelManager';
+import NewModalManager from './tmp/NewModalManager';
+import SlidePanelManager from './tmp/SlidePanelManager';
 
 import AggregatorContainer from './components/AggregatorContainer';
 import AggregatorItem from './components/AggregatorItem';
