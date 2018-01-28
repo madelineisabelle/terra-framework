@@ -1,5 +1,6 @@
 {
   "name": "terra-disclosure-manager",
+  "private": true,
   "main": "lib/DisclosureManager.js",
   "version": "0.0.0",
   "description": "{insert description}",
