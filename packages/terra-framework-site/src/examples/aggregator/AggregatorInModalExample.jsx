@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import NewModalManager from 'terra-aggregator/lib/NewModalManager';
 
-import { disclosureKey as modalAggregatorDisclosureKey } from './ModalAggregator';
+import { disclosureKey as modalAggregatorDisclosureKey } from './components/ModalAggregator';
 
 const propTypes = {
   size: PropTypes.string,

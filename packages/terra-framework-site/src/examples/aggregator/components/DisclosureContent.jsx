@@ -11,7 +11,7 @@ const propTypes = {
   name: PropTypes.string,
 };
 
-class DisclosedContent extends React.Component {
+class DisclosureContent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -45,7 +45,7 @@ class DisclosedContent extends React.Component {
       <ContentContainer
         header={(
           <ActionHeader
-            title={`Disclosed Content - ${name}`}
+            title={`Disclosure Content - ${name}`}
             onClose={app.closeDisclosure}
             onBack={app.goBack}
           />
@@ -103,10 +103,10 @@ class DisclosedContent extends React.Component {
   }
 }
 
-DisclosedContent.propTypes = propTypes;
+DisclosureContent.propTypes = propTypes;
 
-export default DisclosedContent;
+export default DisclosureContent;
 
-const disclosureKey = 'DisclosedContent';
-AppDelegate.registerComponentForDisclosure(disclosureKey, DisclosedContent);
+const disclosureKey = 'DisclosureContent';
+AppDelegate.registerComponentForDisclosure(disclosureKey, DisclosureContent);
 export { disclosureKey };

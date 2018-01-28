@@ -2,7 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const propTypes = {
-  children: PropTypes.node,
+  items: PropTypes.arrayOf(PropTypes.shape({
+    key: PropTypes.string,
+    component: PropTypes.element,
+  })),
   render: PropTypes.func,
   disclose: PropTypes.func,
 };
@@ -15,51 +18,39 @@ class Aggregator extends React.Component {
     this.releaseFocus = this.releaseFocus.bind(this);
     this.setFocusState = this.setFocusState.bind(this);
     this.resetFocusState = this.resetFocusState.bind(this);
-    this.generateChildMap = this.generateChildMap.bind(this);
-    this.renderChildren = this.renderChildren.bind(this);
+    this.renderItems = this.renderItems.bind(this);
 
     this.state = {
-      childMap: this.generateChildMap(this.props.children),
-      focusItemId: undefined,
-      focusItemState: undefined,
+      focusedItemId: undefined,
+      focusedItemState: undefined,
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    const { focusItemId } = this.state;
+    const { items } = this.props;
+    const { focusedItemId } = this.state;
 
-    /**
-     * On the off-chance that the consuming component is using an immutable child array,
-     * we will only rebuild the child data if a difference is detected.
-     */
-    if (nextProps.children !== this.props.children) {
-      let focusItemIdIsPresent;
-      const newChildMap = this.generateChildMap(nextProps.children);
+    if (nextProps.items !== this.props.items) {
+      // If the currently focused item is not present in the new items set,
+      // the focus is forcefully released to clean up any presented disclosures.
 
-      newChildMap.forEach((value) => {
-        /**
-         * We check to see if the current section with focus is present within the new props.
-         * If present, the existing state and disclosure are persisted.
-         */
-        if (value.id === focusItemId) {
-          focusItemIdIsPresent = true;
+      let focusItemIsPresent;
+      items.forEach((item) => {
+        if (item.key === focusedItemId) {
+          focusItemIsPresent = true;
         }
       });
 
-      if (!focusItemIdIsPresent) {
+      if (!focusItemIsPresent) {
         this.releaseFocus(undefined, true);
       }
-
-      this.setState({
-        childMap: newChildMap,
-      });
     }
   }
 
-  setFocusState(id, state) {
+  setFocusState(itemKey, itemState) {
     this.setState({
-      focusItemId: id,
-      focusItemState: state,
+      focusedItemId: itemKey,
+      focusedItemState: itemState,
     });
   }
 
@@ -67,31 +58,9 @@ class Aggregator extends React.Component {
     this.setFocusState();
   }
 
-  generateChildMap(children) {
-    const newMap = new Map();
-
-    /**
-     * Given the amount of functions being passed around to the various Aggregator items, we generate
-     * the item-specific functions once and reuse them for subsequent render calls. This mapping is
-     * first generated in the constructor and is subsequently regenerated within componentWillReceiveProps
-     * if new children are provided.
-     */
-    React.Children.forEach(children, (child) => {
-      const childId = child.props.aggregatorKey ? child.props.aggregatorKey : `aggregator-section-${Date.now()}`;
-
-      newMap.set(child, {
-        id: childId,
-        requestFocusInstance: state => this.requestFocus(childId, state),
-        releaseFocusInstance: () => this.releaseFocus(childId),
-      });
-    });
-
-    return newMap;
-  }
-
-  requestFocus(sectionId, selectionData) {
+  requestFocus(itemId, itemState) {
     const { disclose } = this.props;
-    const { focusItemId } = this.state;
+    const { focusedItemId } = this.state;
 
     return Promise.resolve()
       .then(() =>
@@ -100,9 +69,9 @@ class Aggregator extends React.Component {
          * The releaseFocus's Promise is returned and inserted into the Promise chain to prevent disclosures from occurring
          * if the focus release fails.
          */
-        this.releaseFocus(focusItemId)
+        this.releaseFocus(focusedItemId)
           .then(() => {
-            this.setFocusState(sectionId, Object.freeze(selectionData || {}));
+            this.setFocusState(itemId, Object.freeze(itemState || {}));
           }),
       )
       .then(() => {
@@ -133,7 +102,7 @@ class Aggregator extends React.Component {
                 this.forceDismissInstance = undefined;
                 this.onDismissInstance = undefined;
 
-                if (this.state.focusItemId) {
+                if (this.state.focusedItemId) {
                   this.resetFocusState();
                 }
               });
@@ -148,7 +117,7 @@ class Aggregator extends React.Component {
 
   releaseFocus(itemId, force) {
     // If nothing is currently in focus, we can resolve immediately.
-    if (!this.state.focusItemId) {
+    if (!this.state.focusedItemId) {
       return Promise.resolve();
     }
 
@@ -156,7 +125,7 @@ class Aggregator extends React.Component {
      * If the provided item ID is not the currently focused ID, and the release is not forced,
      * the release is rejected to protect against delayed calls.
      */
-    if (itemId !== this.state.focusItemId && !force) {
+    if (itemId !== this.state.focusedItemId && !force) {
       return Promise.reject();
     }
 
@@ -182,13 +151,12 @@ class Aggregator extends React.Component {
       });
   }
 
-  renderChildren() {
-    const { children } = this.props;
-    const { childMap, focusItemId, focusItemState } = this.state;
+  renderItems() {
+    const { items } = this.props;
+    const { focusedItemId, focusedItemState } = this.state;
 
-    return React.Children.map(children, (child) => {
-      const childData = childMap.get(child);
-      const childIsActive = focusItemId === childData.id;
+    return items.map((item) => {
+      const childIsActive = focusedItemId === item.key;
 
       /**
        * Each child given to the Aggregator is provided with an 'aggregatorDelegate' prop with the following values:
@@ -201,29 +169,29 @@ class Aggregator extends React.Component {
        * releaseFocus - A function that will attempt to release the focus held by the calling child. Returns a promse that is
        *                resolved if the release request was successful. If the release request was unsuccessful, the
        *                Promise will be rejected. This function is only provided to components that are focused.
-       * state - An Object containing the state given to the Aggregator during the focus request.
+       * itemState - An Object containing the state given to the Aggregator during the focus request.
        */
-      return React.cloneElement(child, {
+      return React.cloneElement(item.component, {
         aggregatorDelegate: {
           hasFocus: childIsActive,
-          requestFocus: childData.requestFocusInstance,
-          releaseFocus: childIsActive ? childData.releaseFocusInstance : undefined,
-          state: childIsActive ? focusItemState : undefined,
+          requestFocus: state => this.requestFocus(item.key, state),
+          releaseFocus: childIsActive ? () => (this.releaseFocus(item.key)) : undefined,
+          itemState: childIsActive ? focusedItemState : undefined,
         },
       });
     });
   }
 
   render() {
-    const renderedChildren = this.renderChildren();
+    const renderedItems = this.renderItems();
 
     if (this.props.render) {
-      return this.props.render(renderedChildren);
+      return this.props.render(renderedItems);
     }
 
     return (
       <div>
-        {renderedChildren}
+        {renderedItems}
       </div>
     );
   }

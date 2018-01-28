@@ -6,9 +6,8 @@ import ContentContainer from 'terra-content-container';
 import Header from 'terra-clinical-header';
 import AppDelegate from 'terra-app-delegate';
 import ActionHeader from 'terra-clinical-action-header';
-import DatePicker from 'terra-date-picker';
 
-import { disclosureKey as disclosedContentDisclosureKey } from './DisclosedContent';
+import { disclosureKey as disclosureContentDisclosureKey } from './DisclosureContent';
 
 const ReadonlyModal = ({ app }) => (
   <ContentContainer
@@ -39,7 +38,7 @@ const propTypes = {
   releaseDisclosureFocus: PropTypes.func,
 };
 
-class DisclosureSection extends React.Component {
+class AggregatorItem extends React.Component {
   constructor(props) {
     super(props);
 
@@ -50,7 +49,7 @@ class DisclosureSection extends React.Component {
   handleSelection(event, index) {
     const { aggregatorDelegate, name } = this.props;
 
-    if (aggregatorDelegate.hasFocus && aggregatorDelegate.state.index === index) {
+    if (aggregatorDelegate.hasFocus && aggregatorDelegate.itemState.index === index) {
       aggregatorDelegate.releaseFocus()
         .catch(() => {
           console.log('Section - Focus release failed. Something must be locked.');
@@ -68,7 +67,7 @@ class DisclosureSection extends React.Component {
           size: 'small',
           content: {
             key: 'DisclosedContent-Demo',
-            name: disclosedContentDisclosureKey,
+            name: disclosureContentDisclosureKey,
             props: {
               key: name + index,
               id: name,
@@ -99,11 +98,11 @@ class DisclosureSection extends React.Component {
   }
 
   render() {
-    const { name, disclosureType, disclose, aggregatorKey, aggregatorDelegate, requestDisclosureFocus, releaseDisclosureFocus, registerDismissCheck, ...customProps } = this.props;
+    const { name, disclosureType, disclose, aggregatorDelegate, requestDisclosureFocus, releaseDisclosureFocus, registerDismissCheck, ...customProps } = this.props;
 
     let selectedIndex;
-    if (aggregatorDelegate.hasFocus && aggregatorDelegate.state && aggregatorDelegate.state.index !== undefined) {
-      selectedIndex = aggregatorDelegate.state.index;
+    if (aggregatorDelegate.hasFocus && aggregatorDelegate.itemState && aggregatorDelegate.itemState.index !== undefined) {
+      selectedIndex = aggregatorDelegate.itemState.index;
     }
 
     return (
@@ -114,7 +113,6 @@ class DisclosureSection extends React.Component {
             title={name} startContent={(
               <div style={{ marginRight: '10px' }}>
                 {disclose ? <Button text="Launch Modal" onClick={this.launchModal} /> : null}
-                <DatePicker name="header-date-picker" releaseFocus={releaseDisclosureFocus} requestFocus={requestDisclosureFocus} />
               </div>
           )}
           />
@@ -146,6 +144,6 @@ class DisclosureSection extends React.Component {
   }
 }
 
-DisclosureSection.propTypes = propTypes;
+AggregatorItem.propTypes = propTypes;
 
-export default DisclosureSection;
+export default AggregatorItem;

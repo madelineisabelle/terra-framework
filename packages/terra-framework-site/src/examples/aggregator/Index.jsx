@@ -11,32 +11,31 @@ import AggregatorSrc from '!raw-loader!terra-aggregator/src/Aggregator.jsx';
 /* eslint-enable import/no-webpack-loader-syntax, import/first, import/no-unresolved, import/extensions */
 
 // Example Files
-import SimpleAggregatorExample from './SimpleAggregatorExample';
-import PanelAggregatorExample from './PanelAggregatorExample';
-import ModalAggregtorExample from './ModalAggregtorExample';
+// import SimpleAggregatorExample from './SimpleAggregatorExample';\
+import StandaloneAggregatorExample from './StandaloneAggregatorExample';
+import CustomRenderAggregatorExample from './CustomRenderAggregatorExample';
+// import PanelAggregatorExample from './PanelAggregatorExample';
+// import ModalAggregtorExample from './ModalAggregtorExample';
 import AggregatorInModalExample from './AggregatorInModalExample';
 import CombinedDisclosureExample from './CombinedDisclosureExample';
-import ModalBypassExample from './ModalBypassExample';
+import DisclosureBypassExample from './DisclosureBypassExample';
 
 const NavigationExamples = () => (
   <div>
     <div id="version">Version: {version}</div>
     <Markdown id="readme" src={ReadMe} />
     <PropsTable id="props-header" src={AggregatorSrc} componentName="Aggregator" />
-    <h2 id="aggregator-example">Examples</h2>
-    <SimpleAggregatorExample />
+    <h2 id="aggregator-examples">Examples</h2>
+    <StandaloneAggregatorExample />
     <br />
     <br />
-    <PanelAggregatorExample />
-    <br />
-    <br />
-    <ModalAggregtorExample />
+    <CustomRenderAggregatorExample />
     <br />
     <br />
     <CombinedDisclosureExample />
     <br />
     <br />
-    <ModalBypassExample />
+    <DisclosureBypassExample />
     <br />
     <br />
     <AggregatorInModalExample />
