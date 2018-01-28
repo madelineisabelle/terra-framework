@@ -3,7 +3,7 @@
 The Aggregator provides focus-based mechanisms for managing actions across disparate components.
 
 I need to plump up this documentation a bit, but here's the gist:
-* Components go in Aggregator.
+* Components are provided to the Aggregator.
 * By default, the components will be rendered in the order given. An optional `render` prop can be provided that will override the default render logic. The render prop will be provided with an Object containing:
     * items (`Array`) - The components provided to the Aggregator, now containing an `aggregatorDelegate` prop with access to the Aggregator's APIs.
 * Components can request focus from the Aggregator.
@@ -36,23 +36,24 @@ const aggregatorItems = [{
   component: <ItemC />,
 }]
 
-// Using the default render
+// Standard implementation
 <Aggregator
   items={aggregatorItems}
 />
 
-// Using custom render
-<Aggregator
-  items={aggregatorItems}
-  render={({ items }) => {
-    // ...
-  }}
-/>
-
-// With disclosure
+// Or, with disclosure
 <Aggregator
   items={aggregatorItems}
   disclose={myDiscloseImplementation} // From ModalManager/SlidePanelManager/etc.
+/>
+
+// Or, with custom render
+<Aggregator
+  items={aggregatorItems}
+  disclose={myDiscloseImplementation}
+  render={({ items }) => {
+    // ...
+  }}
 />
 
 ```

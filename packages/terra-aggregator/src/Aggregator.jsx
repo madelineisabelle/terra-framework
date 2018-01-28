@@ -5,11 +5,11 @@ const propTypes = {
   /**
    * The components that will be managed by the Aggregator. Each component provided will be provided with an 'aggregatorDelegate' prop
    * containing the Aggregator API. Keys must also be provided to allow the Aggregator to uniquely identify the component.
-   * Immutable objects are encouraged.
+   * Immutable objects are preferred.
    */
   items: PropTypes.arrayOf(PropTypes.shape({
-    key: PropTypes.string,
-    component: PropTypes.element,
+    key: PropTypes.string.isRequired,
+    component: PropTypes.element.isRequired,
   })),
   /**
    * A function that will override the Aggregators default render. The function will receive an Object parameter data necessary for the
@@ -147,7 +147,8 @@ class Aggregator extends React.Component {
         /**
          * If forceDismissInstance is present, a disclosure must have been opened by the currently focused
          * Aggregator item. Therefore, we will call the forceDismissInstance in order to keep things in sync. The promise
-         * returned by forceDismissInstance will be inserted into the Promise chain.
+         * returned by forceDismissInstance will be inserted into the Promise chain. If the promise is rejected,
+         * the Aggregator's focus state will not be reset.
          *
          * The focus is only reset if the disclosure was dismissed successfully.
          */
