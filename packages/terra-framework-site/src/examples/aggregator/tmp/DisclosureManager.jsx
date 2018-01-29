@@ -273,13 +273,14 @@ class DisclosureManager extends React.Component {
 
   render() {
     const { render } = this.props;
-    const { disclosureIsOpen, disclosureIsFocused, disclosureSize } = this.state;
+    const { disclosureIsOpen, disclosureIsFocused, disclosureSize, disclosureComponentKeys } = this.state;
 
     if (!render) {
       return null;
     }
 
     return render({
+      dismissPresentedComponent: (disclosureComponentKeys.length > 1) ? this.generatePopFunction(disclosureComponentKeys[disclosureComponentKeys.length - 1]) : this.safelyCloseDisclosure,
       closeDisclosure: this.safelyCloseDisclosure,
       content: {
         components: this.renderContentComponents(),
