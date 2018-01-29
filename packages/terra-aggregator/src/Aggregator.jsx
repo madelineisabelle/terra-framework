@@ -99,19 +99,19 @@ class Aggregator extends React.Component {
          */
         if (disclose) {
           focusRequestPayload.disclose = data => disclose(data)
-            .then(({ onDismiss, forceDismiss, ...other }) => {
+            .then(({ afterDismiss, dismissDisclosure, ...other }) => {
               /**
-               * The disclosure's forceDismiss instance is cached so it can be called later. If an Aggregator item is
+               * The disclosure's dismissDisclosure instance is cached so it can be called later. If an Aggregator item is
                * currently presenting a disclosure and releases focus, we will call this function to force
                * the disclosure to close.
                */
-              this.forceDismissInstance = forceDismiss;
+              this.forceDismissInstance = dismissDisclosure;
 
               /**
-               * A handler is added to the deferred onDismiss promise chain to remove the cached forceDismiss instance (the disclosure is
+               * A handler is added to the deferred afterDismiss promise chain to remove the cached dismissDisclosure instance (the disclosure is
                * closing, so it is no longer relevant). The handler also resets the focus state if focus is currently held by a component.
                */
-              onDismiss.then(() => {
+              afterDismiss.then(() => {
                 this.forceDismissInstance = undefined;
 
                 if (this.state.focusedItemId) {
@@ -120,7 +120,7 @@ class Aggregator extends React.Component {
               });
 
               // We return the same API so as not to disrupt the chain.
-              return { onDismiss, forceDismiss, ...other };
+              return { afterDismiss, dismissDisclosure, ...other };
             });
         }
 
